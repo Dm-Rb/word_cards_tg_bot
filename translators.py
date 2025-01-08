@@ -20,5 +20,5 @@ def get_yandex_translations(word, lang="en-ru", api_url=read_env.YANDEX_API_URL,
     return translations
 
 # Пример использования
-translations = get_yandex_translations("Love")
+translations = get_yandex_translations("fell")
 print(translations)
