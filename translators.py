@@ -3,7 +3,7 @@ import read_env
 
 
 
-#pip install python-dotenv
+# pip install python-dotenv
 def get_yandex_translations(word, lang="en-ru", api_url=read_env.YANDEX_API_URL, api_key= read_env.YANDEX_API_KEY):
     params = {"key": api_key, "lang": lang, "text": word}
     response = requests.get(api_url, params=params)
