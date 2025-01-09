@@ -41,7 +41,36 @@ class DataBaseWords:
                 '''
             )
             conn.commit()
-            for pos_en, pos_ru in zip(['noun', 'verb', 'adjective'], ['существительное', 'глагол', 'прилагательное']):
+            for pos_en, pos_ru in zip(
+                    ['noun',
+                     'verb',
+                     'adjective',
+                     'adverb',
+                     'pronoun',
+                     'preposition',
+                     'conjunction',
+                     'interjection',
+                     'determiner',
+                     'article',
+                     'particle',
+                     'numeral',
+                     'predicative'],
+
+                    ['существительное',
+                     'глагол',
+                     'прилагательное',
+                     'наречие',
+                     'местоимение',
+                     'предлог',
+                     'союз',
+                     'междометие',
+                     'детерминатив',
+                     'артикль',
+                     'частица',
+                     'числительное',
+                     'предикатив'
+                     ]
+            ):
                 conn.execute(
                     "INSERT OR IGNORE INTO parts_of_speech_const (pos_en, pos_ru) VALUES (?, ?)",
                     (pos_en, pos_ru, )
@@ -128,5 +157,4 @@ class DataBaseWords:
             )
             await db.commit()
 
-db = DataBaseWords()
 
