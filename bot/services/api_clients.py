@@ -1,12 +1,12 @@
+from config_file import config
 import requests
-import read_env
 import re
-from database import DataBaseWords
+from bot.services.database import DataBaseDictionary
 
 
 class YandexDictionaryRequests:
-    api_url = read_env.YANDEX_API_URL
-    api_key = read_env.YANDEX_API_KEY
+    api_url = config.YANDEX_API_URL
+    api_key = config.YANDEX_API_KEY
 
     def make_request_to_api_syn(self, word: str, lang: str = "en-ru") -> list or None:
         if lang not in ["en-ru", "ru-en"]:
@@ -51,7 +51,7 @@ class YandexDictionaryRequests:
 ya = YandexDictionaryRequests()
 data = ya.make_request_to_api_syn('should', 'en-ru')
 r = ya.parse_array(data)
-db = DataBaseWords()
+db = DataBaseDictionary()
 async def d():
     for item in r:
         await db.add_new_couple_to_table__translation_en_ru(*item.values())
