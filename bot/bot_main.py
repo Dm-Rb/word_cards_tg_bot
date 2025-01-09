@@ -2,8 +2,7 @@ from config_file import config  # хуй пойми как оно сработа
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
-# from bot.config import config
-# from bot.handlers import setup_handlers
+
 
 async def main():
     bot = Bot(token=config.BOT_TOKEN)

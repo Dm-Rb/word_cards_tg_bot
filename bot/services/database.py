@@ -2,6 +2,7 @@ import aiosqlite
 import sqlite3
 from os.path import join as join_path
 
+
 class DataBaseDictionary:
 
     def __init__(self, db_name: str = 'dictionary.db', db_path='files'):
@@ -174,3 +175,11 @@ class DataBaseDictionary:
             await db.commit()
 
 
+class DataBaseUsers:
+
+    def __init__(self, db_name: str = 'users.db', db_path='files'):
+        self.db_path = join_path(db_path, db_name)
+
+
+db_dictionary = DataBaseDictionary()
+db_users = DataBaseUsers()
