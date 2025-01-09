@@ -100,7 +100,8 @@ class DataBaseWords:
                     frequency INTEGER,
                     FOREIGN KEY (id_word_en) REFERENCES words_en(id),
                     FOREIGN KEY (id_word_ru) REFERENCES words_ru(id),
-                    FOREIGN KEY (id_pos) REFERENCES parts_of_speech_const(id)
+                    FOREIGN KEY (id_pos) REFERENCES parts_of_speech_const(id),
+                    UNIQUE(id_word_en, id_word_ru, id_pos, frequency)
                 )
                 '''
             )
@@ -152,7 +153,7 @@ class DataBaseWords:
         async with aiosqlite.connect(self.db_name) as db:
             # попробуем вставить новую запись. если идентичная строка уже есть - скипаем
             await db.execute(
-                'INSERT INTO translation_en_ru (id_word_en, id_word_ru, id_pos, frequency) VALUES (?, ?, ?, ?)',
+                'INSERT OR IGNORE INTO translation_en_ru (id_word_en, id_word_ru, id_pos, frequency) VALUES (?, ?, ?, ?)',
                 (id_word_en, id_word_ru, id_pos, freq,)
             )
             await db.commit()
