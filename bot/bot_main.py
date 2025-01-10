@@ -2,12 +2,14 @@ from config_file import config  # хуй пойми как оно сработа
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
+from bot.handlers import commands
 
 
 async def main():
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()
-
+    # подключаем роутер к диспетчеру
+    dp.include_router(commands.router)
     # # Регистрируем хендлеры
     # setup_handlers(dp)
 
