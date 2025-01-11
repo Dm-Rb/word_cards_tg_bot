@@ -1,7 +1,5 @@
 from config_file import config
 import requests
-import re
-from bot.services.database import DataBase
 
 
 class YandexDictionaryRequests:
@@ -35,28 +33,34 @@ class YandexDictionaryRequests:
                 result_array.append(elem)
         return result_array
 
-    @staticmethod
-    def detect_language(word):
-        # проверка на английские литеры
-        if re.fullmatch(r'[A-Za-z]+', word):
-            return 'en-ru'
-        # проверка на русские литеры
-        elif re.fullmatch(r'[А-Яа-яЁё]+', word):
-            return 'ru-en'
-        else:
-            # смешанные символы или не только буквы
-            return None
 
-# test
+#test
+# from bot.globals import database
+# #
 # ya = YandexDictionaryRequests()
 # data = ya.make_request_to_api_syn('should', 'en-ru')
-# r = ya.parse_array(data)
-# db = DataBase()
+# items = ya.parse_array(data)
+# #
 # async def d():
-#     d = await db.get_row_id_by_value_from_table__words('should', 'en')
-#     if d:
-#         r = await db.get_translations_word_by_id(d)
-#         print(r)
+#     for item in items:
+#         print(item)
+#         await database.add_new_couple_to_table__translation_en_ru(item['word_en'], item['word_ru'], item['pos'], item['freq'])
+#
+#
+#
+# if __name__ == "__main__":
+#     import asyncio
+#     asyncio.run(d())
+
+
+# from bot.globals import database
+# #
+#
+# #
+# async def d():
+#     item = await database.get_translations_word_by_id(1, 'en')
+#     print(item)
+#
 #
 # if __name__ == "__main__":
 #     import asyncio

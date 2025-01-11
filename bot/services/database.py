@@ -5,14 +5,16 @@ from os.path import join as join_path
 
 class DataBase:
 
-    def __init__(self, db_name: str = 'dictionary_userdata.db', db_path='files'):
-        self.db_path = join_path(db_path, db_name)
+    def __init__(self, db_name: str = 'data.db', path='.'):
+        self.db_path = join_path(path, db_name)
         # create tables if it not exist
         self.__create_tables()
         # vars
         self.parts_of_speech_const = self.__get_parts_of_speech_const()  # [{pos_en: {'id': id, 'ru': pos_ru}, {}, ...]
 
     #  ### START create tables BLOCK ###
+    def init(self):
+        pass
 
     def __create_table__words(self, lang: str):
         """
@@ -178,9 +180,9 @@ class DataBase:
             await conn.commit()
             # на ст.ов.фл рекомендуют закрывать коннектор, но я хуй знает зачем, ведь тут менеджер контекста
             await conn.close()
-
         # Получает ID строки
-        await self.get_row_id_by_value_from_table__words(word, lang)
+        word_id = await self.get_row_id_by_value_from_table__words(word, lang)
+        return word_id
 
     async def get_row_id_by_value_from_table__words(self, word: str, lang: str) -> int or False:
         """
@@ -197,6 +199,7 @@ class DataBase:
         async with aiosqlite.connect(self.db_path) as conn:
             cursor = await conn.execute(f'SELECT id FROM words_{lang} WHERE word = ?', (word,))
             row = await cursor.fetchone()
+
             if row:
                 return row[0]
             else:
@@ -220,7 +223,6 @@ class DataBase:
         except KeyError:
             print(f'ключ {pos} не содержится в аттрибуте <parts_of_speech_const>')
             raise KeyError
-
         async with aiosqlite.connect(self.db_path) as db:
             # Попробует вставить новую запись. Если идентичная строка уже есть (парам. UNIQUE) - скипает
             await db.execute(
