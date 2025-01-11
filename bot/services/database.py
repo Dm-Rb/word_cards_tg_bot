@@ -238,7 +238,6 @@ class DataBase:
             ('should', 'должны', 'adjective', 'прилагательное', 10),
             ('should', 'необходимо', 'predicative', 'предикатив', 5)
         ]
-
         :param word_id: int - табличный id слова en_word или ru_word
         :param lang: str - тип таблицы (ru или en). Иными словами это указатель на то, на каком языке передаётся word_id
         :return:
