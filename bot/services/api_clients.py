@@ -1,7 +1,7 @@
 from config_file import config
 import requests
 import re
-from bot.services.database import DataBaseDictionary
+from bot.services.database import DataBase
 
 
 class YandexDictionaryRequests:
@@ -48,15 +48,16 @@ class YandexDictionaryRequests:
             return None
 
 # test
-ya = YandexDictionaryRequests()
-data = ya.make_request_to_api_syn('should', 'en-ru')
-r = ya.parse_array(data)
-db = DataBaseDictionary()
-async def d():
-    for item in r:
-        await db.add_new_couple_to_table__translation_en_ru(*item.values())
-        print(item)
-
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(d())
+# ya = YandexDictionaryRequests()
+# data = ya.make_request_to_api_syn('should', 'en-ru')
+# r = ya.parse_array(data)
+# db = DataBase()
+# async def d():
+#     d = await db.get_row_id_by_value_from_table__words('should', 'en')
+#     if d:
+#         r = await db.get_translations_word_by_id(d)
+#         print(r)
+#
+# if __name__ == "__main__":
+#     import asyncio
+#     asyncio.run(d())
