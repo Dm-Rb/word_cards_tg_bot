@@ -106,6 +106,7 @@ class DataBase:
                 '''
             )
             conn.commit()
+
     def __create_table__user_configs(self):
         """
         Таблица для пользовательских словарей
@@ -114,7 +115,7 @@ class DataBase:
             conn.execute(
                 f'''
                 CREATE TABLE IF NOT EXISTS user_configs (
-                    id_tg_user TEXT NOT NULL,
+                    id_tg_user TEXT UNIQUE NOT NULL,
                     api_key TEXT
                 )
                 '''
@@ -148,6 +149,7 @@ class DataBase:
         self.__create_table__parts_of_speech_const()
         self.__create_table__translation_en_ru()
         self.__create_table__user_dicts()
+        self.__create_table__user_configs()
 
     #  ### END create tables BLOCK ###
 
@@ -237,13 +239,13 @@ class DataBase:
         except KeyError:
             print(f'ключ {pos} не содержится в аттрибуте <parts_of_speech_const>')
             raise KeyError
-        async with aiosqlite.connect(self.db_path) as db:
+        async with aiosqlite.connect(self.db_path) as conn:
             # Попробует вставить новую запись. Если идентичная строка уже есть (парам. UNIQUE) - скипает
-            await db.execute(
+            await conn.execute(
                 'INSERT OR IGNORE INTO translation_en_ru (id_word_en, id_word_ru, id_pos, frequency) VALUES (?, ?, ?, ?)',
                 (id_word_en, id_word_ru, id_pos, freq,)
             )
-            await db.commit()
+            await conn.commit()
 
     async def get_translations_word_by_id(self, word_id: int, lang: str = 'en'):
         """
@@ -293,3 +295,24 @@ class DataBase:
     ###
 
     #  ### START operations with user data tables BLOCK ###
+    async def add_new_user(self, user_id, user_api_key=None):
+        async with aiosqlite.connect(self.db_path) as conn:
+
+            await conn.execute(
+                "INSERT INTO user_configs (id_tg_user, api_key) VALUES (?, ?)",
+                (user_id, user_api_key,)
+            )
+            await conn.commit()
+            # на ст.ов.фл рекомендуют закрывать коннектор, но я хуй знает зачем, ведь тут менеджер контекста
+            await conn.close()
+
+    async def check_user_in_table(self, user_id):
+        async with aiosqlite.connect(self.db_path) as conn:
+            r = await conn.execute(
+                "SELECT * FROM user_configs WHERE id_tg_user = ?",
+                (user_id,)
+            )
+            data = await r.fetchone()
+            return bool(data)
+
+
