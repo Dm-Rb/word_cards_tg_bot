@@ -106,6 +106,20 @@ class DataBase:
                 '''
             )
             conn.commit()
+    def __create_table__user_configs(self):
+        """
+        Таблица для пользовательских словарей
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                f'''
+                CREATE TABLE IF NOT EXISTS user_configs (
+                    id_tg_user TEXT NOT NULL,
+                    api_key TEXT
+                )
+                '''
+            )
+            conn.commit()
 
     def __create_table__user_dicts(self):
         """
@@ -275,3 +289,7 @@ class DataBase:
         return result
 
     # ### END operations with tables of main dictionary (en/ru words and their relationships) BLOCK ###
+
+    ###
+
+    #  ### START operations with user data tables BLOCK ###
