@@ -1,19 +1,16 @@
 from bot.services.utils import frequency_word
 
 
-def start_command_new_user(user_first_name):
-    message = \
+def start_command(user_first_name, is_new_user: bool) -> str:
+    if is_new_user:
+        message = \
         f"""Привет, {user_first_name}! 👋
 Добро пожаловать! Этот бот поможет тебе изучать английские слова методом интервального повторения."""
+    else:
+        message = f"""C возвращением, {user_first_name}! 👋"""
 
     return message
 
-def start_command_user(user_first_name):
-    message = \
-        f"""C возвращением, {user_first_name}! 👋
-"""
-
-    return message
 
 def word_details(word_details_dict):
     message = ''
