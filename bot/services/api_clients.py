@@ -1,11 +1,11 @@
 from config_file import config
 import requests
-
+from bot.globals import database
 
 class YandexDictionaryRequests:
     api_url = config.YANDEX_API_URL
     api_key = config.YANDEX_API_KEY
-
+    db_pos = database.parts_of_speech_const
     def make_request_to_api_syn(self, word: str, lang: str = "en-ru") -> list or None:
         if lang not in ["en-ru", "ru-en"]:
             raise ValueError('argument <lang> is not valid')
@@ -17,8 +17,8 @@ class YandexDictionaryRequests:
 
         return r_data.get('def', None)
 
-    @staticmethod
-    def parse_array(r_data) -> list[dict]:
+    @classmethod
+    def parse_array(cls, r_data) -> list[dict]:
         # разбирает на массив словарей.
         # каждый словарь имеет вид {'word_en': str, 'word_ru': str, 'pos': str, 'freq': int
         result_array = []
@@ -27,7 +27,8 @@ class YandexDictionaryRequests:
                 elem = {
                     'word_en': item['text'],
                     'word_ru': tr_item['text'],
-                    'pos': tr_item['pos'],
+                    'pos_en': tr_item['pos'],
+                    'pos_ru': cls.db_pos[tr_item['pos']]['ru'],
                     'freq': tr_item['fr']
                 }
                 result_array.append(elem)
