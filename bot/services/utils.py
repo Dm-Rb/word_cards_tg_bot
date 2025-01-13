@@ -4,6 +4,8 @@ import re
 """
 В этом модуле содержатся функции для обработки текста и работы с массивами
 """
+
+
 def preparing_array_tuple2dict(array: list[tuple]) -> list[dict] or None:
     if not array:
         return array
@@ -20,6 +22,8 @@ def preparing_array_tuple2dict(array: list[tuple]) -> list[dict] or None:
             }
         )
     return result
+
+
 def detect_language(text):
     # проверка на наличие только букв и пробелов
     if not re.match("^[а-яА-Яa-zA-Z ]*$", text):
