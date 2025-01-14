@@ -1,15 +1,17 @@
-from config_file import config  # хуй пойми как оно сработало с импортом
+from config_file import config
 import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
 from bot.handlers import commands, text_messages
 from bot.globals import database
 
+
 async def main():
     # main objects
     database.init()
     bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()
+
     # ---
 
     # подключаем роутеры к диспетчеру
@@ -26,7 +28,12 @@ async def main():
     ])
 
     # Запускаем long polling
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        # Закрываем API клиент после завершения работы
+        await bot.session.close()
+
 
 if __name__ == "__main__":
     print('start')
