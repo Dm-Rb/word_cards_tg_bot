@@ -48,10 +48,10 @@ async def user_word_handler(message: Message):
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
 
     # Текст из функции check_word
-    # reply_text = f"{word}\nДобавить в ваш личный словарь для изучения?"
+    reply_text = f"{word}\nДобавить в ваш личный словарь для изучения?"
     #
     # # Используем клавиатуру из inline.py
-    # keyboard = get_kb__yes_no_answer(word)
+    keyboard = get_kb__yes_no_answer(word)
     #
     # # Отправляем сообщение с клавиатурой
-    # await message.answer(reply_text, reply_markup=keyboard)
+    await message.answer(reply_text, reply_markup=keyboard)

@@ -73,7 +73,7 @@ class YandexDictionaryApi:
     def get_not_exist_pos(self, pos_en):
         # Получает перевод части речи на русском языке используя апи.
         # Необходим в случае отсутствия нужного значения в кеше self.db_pos
-        response = self.fetch_data_sync(pos_en, 'en')
+        response: dict = self.fetch_data_sync(pos_en, 'en')
         pos_ru = response['def'][0]['tr'][0]['text']
         return [pos_en, pos_ru]
 

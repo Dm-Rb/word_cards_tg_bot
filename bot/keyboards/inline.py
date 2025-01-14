@@ -9,8 +9,8 @@ def get_kb__yes_no_answer(message: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="ДА", callback_data=f"add_word:{message}"),
-                InlineKeyboardButton(text="НЕТ", callback_data=f"skip_word:{message}"),
+                InlineKeyboardButton(text="ДА", callback_data=f"yes:{message}"),
+                InlineKeyboardButton(text="НЕТ", callback_data=f"no:{message}"),
             ]
         ]
     )
