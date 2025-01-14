@@ -117,11 +117,3 @@ def frequency_word(freq: int) -> str:
         return 'часто'
     else:
         return 'оч. часто'
-
-
-#
-# test_l = [{'word_en': 'should', 'word_ru': 'должны', 'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'freq': 10}, {'word_en': 'should', 'word_ru': 'необходимо', 'pos_en': 'predicative', 'pos_ru': 'предикатив', 'freq': 5}, {'word_en': 'should', 'word_ru': 'нужно', 'pos_en': 'predicative', 'pos_ru': 'предикатив', 'freq': 5}, {'word_en': 'should', 'word_ru': 'надо', 'pos_en': 'predicative', 'pos_ru': 'предикатив', 'freq': 5}, {'word_en': 'should', 'word_ru': 'следует', 'pos_en': 'verb', 'pos_ru': 'глагол', 'freq': 10}, {'word_en': 'should', 'word_ru': 'стоит', 'pos_en': 'verb', 'pos_ru': 'глагол', 'freq': 1}, {'word_en': 'should', 'word_ru': 'приходиться', 'pos_en': 'verb', 'pos_ru': 'глагол', 'freq': 1}, {'word_en': 'should', 'word_ru': 'надлежать', 'pos_en': 'verb', 'pos_ru': 'глагол', 'freq': 1}, {'word_en': 'should', 'word_ru': 'если', 'pos_en': 'conjunction', 'pos_ru': 'союз', 'freq': 5}, {'word_en': 'should', 'word_ru': 'бы', 'pos_en': 'particle', 'pos_ru': 'частица', 'freq': 1}]
-# r = grouping_array_by_pos(test_l,  'en')
-# from bot.templates.text import word_details
-#
-# print(word_details(r))

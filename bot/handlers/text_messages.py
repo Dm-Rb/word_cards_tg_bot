@@ -34,10 +34,9 @@ async def user_word_handler(message: Message):
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         word_details: dict = grouping_array_by_pos(word_details, lang)
         # Генерирует текст на базе шаблона
-        await message.answer(text=preparing_message(word_details), parse_mode='HTML')
+        await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
     # Слово отсутствует в БД, делаем запрос к API Yandex Dictionary
     else:
-        print('flag')
         # Запрос к APi
         ya_dict_api_resp = await ya_dict_api.get_word_details_from_ya_dict(word, lang)
         # Если пустой ответ
@@ -46,7 +45,7 @@ async def user_word_handler(message: Message):
             return
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         word_details: dict = grouping_array_by_pos(ya_dict_api_resp, lang)
-        await message.answer(text=preparing_message(word_details), parse_mode='HTML')
+        await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
 
     # Текст из функции check_word
     # reply_text = f"{word}\nДобавить в ваш личный словарь для изучения?"
