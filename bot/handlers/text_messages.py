@@ -18,7 +18,7 @@ async def user_word_handler(message: Message):
     word = message.text.strip().lower()  # Получаем отправленное слово
     lang = detect_language(word)
     if not lang:
-        await message.answer("Cтрока содержит недопустимые символы (цифры, спецсимволы и т.д.)")
+        await message.answer("🙅‍♂️ Cтрока содержит недопустимые символы (цифры, спецсимволы и т.д.)")
         return
     # Получить id, если это слово есть в базе данных
     word_id = await database.get_row_id_by_value_from_table__words(word, lang)
@@ -41,7 +41,7 @@ async def user_word_handler(message: Message):
         ya_dict_api_resp = await ya_dict_api.get_word_details_from_ya_dict(word, lang)
         # Если пустой ответ
         if not ya_dict_api_resp:
-            await message.answer("Слово не найдено, возможно при вводе была допущена опечатка")
+            await message.answer("🤷 Слово не найдено, возможно при вводе была допущена опечатка")
             return
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         word_details: dict = grouping_array_by_pos(ya_dict_api_resp, lang)

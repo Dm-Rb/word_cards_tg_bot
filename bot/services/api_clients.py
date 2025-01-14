@@ -24,7 +24,18 @@ class YandexDictionaryApi:
         # каждый словарь имеет вид {'word_en': str, 'word_ru': str, 'pos': str, 'freq': int
         result_array = []
         for item in r_data['def']:
+
             for tr_item in item['tr']:
+                # Этот блок на случай если в БД отсутствует название части речи на русском языке
+                ###
+                try:
+                    self.db_pos[tr_item['pos']]['ru']
+                except KeyError:
+                    pos_items = self.get_not_exist_pos(tr_item['pos'])
+                    database.add_new_couple_to_table__parts_of_speech_const(*pos_items)
+                    # переинициализирует
+                    self.db_pos = database.parts_of_speech_const
+                ###
                 elem = {
                     'word_en': item['text'] if lang == 'en' else tr_item['text'],
                     'word_ru': tr_item['text'] if lang == 'en' else item['text'],
@@ -36,9 +47,10 @@ class YandexDictionaryApi:
         return result_array
 
     def fetch_data_sync(self, word: str, lang: str) -> list or None:
-        if lang not in ["en-ru", "ru-en"]:
+        if lang not in ["en", "ru"]:
             raise ValueError('argument <lang> is not valid')
-        params = {"key": self.api_key, "lang": lang, "text": word}
+        lang_dict = {'en': 'en-ru', 'ru': 'ru-en'}
+        params = {"key": self.api_key, "lang": lang_dict[lang], "text": word}
         response = requests.get(self.api_url, params=params)
         if response.status_code != 200:
             return f"Error: {response.status_code}"
@@ -55,6 +67,12 @@ class YandexDictionaryApi:
             return
         return self.parse_array(response, lang)
 
+    def get_not_exist_pos(self, pos_en):
+        response = self.fetch_data_sync(pos_en, 'en')
+        pos_ru = response['def'][0]['tr'][0]['text']
+        return [pos_en, pos_ru]
+
 
 #  инициализация объекта для импорта
 ya_dict_api = YandexDictionaryApi()
+ya_dict_api.get_not_exist_pos('participle')

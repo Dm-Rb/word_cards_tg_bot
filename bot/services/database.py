@@ -9,7 +9,7 @@ class DataBase:
         self.db_path = join_path(path, db_name)
         # create tables if it not exist
         self.__create_tables()
-        # vars
+        # типа хеш с pos
         self.parts_of_speech_const = self.__get_parts_of_speech_const()  # [{pos_en: {'id': id, 'ru': pos_ru}, {}, ...]
 
     #  ### START create tables BLOCK ###
@@ -51,6 +51,7 @@ class DataBase:
                     ['noun',
                      'verb',
                      'adjective',
+                     'participle',
                      'adverb',
                      'pronoun',
                      'preposition',
@@ -65,6 +66,7 @@ class DataBase:
                     ['существительное',
                      'глагол',
                      'прилагательное',
+                     'причастие',
                      'наречие',
                      'местоимение',
                      'предлог',
@@ -171,6 +173,16 @@ class DataBase:
             for item in r:
                 result[item[1]] = {'id': item[0], 'ru': item[2]}
             return result
+    def add_new_couple_to_table__parts_of_speech_const(self, pos_en, pos_ru):
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                'INSERT INTO parts_of_speech_const (pos_en, pos_ru) VALUES (?, ?)',
+                (pos_en, pos_ru, )
+            )
+        # Обновить хеш
+        self.parts_of_speech_const = self.__get_parts_of_speech_const()
+        return
+
 
     async def __add_new_row_to_table__words(self, word: str, lang: str):
         """
