@@ -26,16 +26,19 @@ class YandexDictionaryApi:
         for item in r_data['def']:
 
             for tr_item in item['tr']:
-                # Этот блок на случай если в БД отсутствует название части речи на русском языке
-                ###
+
+                ### Этот блок на случай если в БД отсутствует название части речи на русском языке
                 try:
                     self.db_pos[tr_item['pos']]['ru']
                 except KeyError:
+                    # Получает пару [pose_en, pos_ru]
                     pos_items = self.get_not_exist_pos(tr_item['pos'])
+                    # Записывает пару в БД
                     database.add_new_couple_to_table__parts_of_speech_const(*pos_items)
-                    # переинициализирует
+                    # Переинициализирует атрибут
                     self.db_pos = database.parts_of_speech_const
-                ###
+                ### ---
+
                 elem = {
                     'word_en': item['text'] if lang == 'en' else tr_item['text'],
                     'word_ru': tr_item['text'] if lang == 'en' else item['text'],
@@ -68,6 +71,8 @@ class YandexDictionaryApi:
         return self.parse_array(response, lang)
 
     def get_not_exist_pos(self, pos_en):
+        # Получает перевод части речи на русском языке используя апи.
+        # Необходим в случае отсутствия нужного значения в кеше self.db_pos
         response = self.fetch_data_sync(pos_en, 'en')
         pos_ru = response['def'][0]['tr'][0]['text']
         return [pos_en, pos_ru]
