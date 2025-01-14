@@ -75,4 +75,3 @@ class YandexDictionaryApi:
 
 #  инициализация объекта для импорта
 ya_dict_api = YandexDictionaryApi()
-ya_dict_api.get_not_exist_pos('participle')
