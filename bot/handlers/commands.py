@@ -16,7 +16,7 @@ async def command_start_handler(message: Message):
     # # Передаем ID пользователя в функцию, которая проверяет наличие в базе возвращает t\f. Подставить в is_new_user
     is_new_user: bool = await database.check_user_in_table(user_id)
     #
-    if not is_new_user:  # Если пользователя нет в базе (False)
+    if not is_new_user:  # Если ID пользователя нет в БД (is_new_user=False)
         await database.add_new_user(user_id)
         await message.answer(
             text.start_command(message.from_user.first_name, is_new_user)
