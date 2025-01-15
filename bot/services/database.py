@@ -331,4 +331,12 @@ class DataBase:
             data = await r.fetchone()
             return bool(data)
 
+    async def is_word_in_table__user_data_by_user_id(self, id_tg_user, id_word_en):
+        async with aiosqlite.connect(self.db_path) as conn:
+            r = await conn.execute(
+                "SELECT * FROM user_data WHERE id_tg_user = ? AND id_word_en = ?",
+                (id_tg_user, id_word_en,)
+            )
+            data = await r.fetchone()
+        return bool(data)
 
