@@ -2,7 +2,7 @@ from bot.services.utils import frequency_word
 import emoji
 
 def start_command(user_first_name, is_new_user: bool) -> str:
-    if is_new_user:
+    if not is_new_user:
         message = \
         f"""Привет, {user_first_name}! 👋
 Добро пожаловать! Этот бот поможет тебе изучать английские слова методом интервального повторения."""
@@ -18,7 +18,7 @@ def word_details(word_details_dict, lang):
     message += f"<b>{word_details_dict['word'].capitalize()}</b>  {lags_emoji[lang]}"
     for item_transl in word_details_dict['translation']:
         # Используем <i> с корректным закрытием </i>
-        transl_text = f"\n*️⃣ <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
+        transl_text = f"\n📎 <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
         # Формируем список переведенных слов
         transl_text += ', '.join([f"{item['word']} <i>({frequency_word(item['freq'])})</i>" for item in item_transl['words_list']])
         message += '\n' + transl_text
