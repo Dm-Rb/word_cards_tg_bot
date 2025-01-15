@@ -17,6 +17,7 @@ async def user_word_handler(message: Message):
     """
     word = message.text.strip().lower()  # Получаем отправленное слово
     lang = detect_language(word)
+
     if not lang:
         await message.answer("🙅‍♂️ Cтрока содержит недопустимые символы (цифры, спецсимволы и т.д.)")
         return
@@ -35,6 +36,10 @@ async def user_word_handler(message: Message):
         word_details: dict = grouping_array_by_pos(word_details, lang)
         # Генерирует текст на базе шаблона
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
+        # Сообщение с инлайн клавиатурой
+        reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
+        await message.answer(text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word))
+
     # Слово отсутствует в БД, делаем запрос к API Yandex Dictionary
     else:
         # Запрос к APi
@@ -46,12 +51,7 @@ async def user_word_handler(message: Message):
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         word_details: dict = grouping_array_by_pos(ya_dict_api_resp, lang)
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
+        # Сообщение с инлайн клавиатурой
+        reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
+        await message.answer(text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word))
 
-    # Текст из функции check_word
-    # reply_text = f"{word}\nДобавить в ваш личный словарь для изучения?"
-    #
-    # # Используем клавиатуру из inline.py
-    # keyboard = get_kb__yes_no_answer(word)
-    #
-    # # Отправляем сообщение с клавиатурой
-    # await message.answer(reply_text, reply_markup=keyboard)
