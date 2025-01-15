@@ -1,12 +1,16 @@
 import aiosqlite
 import sqlite3
 from os.path import join as join_path
+from pathlib import Path
 
 
 class DataBase:
 
-    def __init__(self, db_name: str = 'data.db', path='.'):
-        self.db_path = join_path(path, db_name)
+    def __init__(self, path, db_name: str = 'data.db'):
+        # Убедимся, что путь абсолютный
+        self.db_path = Path(path).resolve() / db_name
+        # Для отладки
+        print(f"Database path: {self.db_path}")
         # create tables if it not exist
         self.__create_tables()
         # типа хеш с pos
