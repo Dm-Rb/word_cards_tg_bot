@@ -201,6 +201,10 @@ class DataBase:
         # Проверяет валидность аргумента <lang>
         if lang not in ['en', 'ru']:
             raise ValueError("Argument <lang> is not valid. It must be in ['en', 'ru']")
+
+        word_id = await self.get_row_id_by_value__words_enru(word, lang)
+        if word_id:
+            return word_id
         # ---
         async with aiosqlite.connect(self.db_path) as conn:
             # Попробует вставить новую запись. Если идентичная строка уже есть (парам. UNIQUE) - скипает
