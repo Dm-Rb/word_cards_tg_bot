@@ -1,6 +1,5 @@
 import aiosqlite
 import sqlite3
-from os.path import join as join_path
 from pathlib import Path
 
 
@@ -12,9 +11,9 @@ class DataBase:
         # Для отладки
         print(f"Database path: {self.db_path}")
         # create tables if it not exist
-        self.__create_tables()
+        self.__create_tables_init()
         # типа хеш с pos
-        self.parts_of_speech_const = self.__get_parts_of_speech_const()  # [{pos_en: {'id': id, 'ru': pos_ru}, {}, ...]
+        self.parts_of_speech_const = self.__get_all__parts_of_speech_const()  # [{pos_en: {'id': id, 'ru': pos_ru}, {}, ...]
 
     #  ### START create tables BLOCK ###
     def init(self):
@@ -128,7 +127,7 @@ class DataBase:
             )
             conn.commit()
 
-    def __create_table__user_dicts(self):
+    def __create_table__user_data(self):
         """
         Таблица для пользовательских словарей
         """
@@ -140,21 +139,20 @@ class DataBase:
                     id_word_en INTEGER NOT NULL,
                     learning_level INTEGER DEFAULT 0,
                     last_review_datetime TEXT NOT NULL CHECK (LENGTH(last_review_datetime) = 19),
-                    next_review_datetime TEXT CHECK (LENGTH(next_review_datetime) = 19),
                     FOREIGN KEY (id_word_en) REFERENCES words_en(id)
                 )
                 '''
             )
             conn.commit()
 
-    def __create_tables(self):
+    def __create_tables_init(self):
         """
         Метод-обёртка, создаёт три таблицы, вызывается в инициализаторе класса
         """
         [self.__create_table__words(lang) for lang in ['en', 'ru']]
         self.__create_table__parts_of_speech_const()
         self.__create_table__translation_en_ru()
-        self.__create_table__user_dicts()
+        self.__create_table__user_data()
         self.__create_table__user_configs()
 
     #  ### END create tables BLOCK ###
@@ -163,7 +161,7 @@ class DataBase:
 
     #  ### START operations with tables of main dictionary (en/ru words and their relationships) BLOCK ###
 
-    def __get_parts_of_speech_const(self) -> dict:
+    def __get_all__parts_of_speech_const(self) -> dict:
         """
         Метод возвращает полное содержание таблицы parts_of_speech_const в виде dict
         с немного изменённой морфологией и названиями ключей.
@@ -177,18 +175,18 @@ class DataBase:
             for item in r:
                 result[item[1]] = {'id': item[0], 'ru': item[2]}
             return result
-    def add_new_couple_to_table__parts_of_speech_const(self, pos_en, pos_ru):
+
+    def add_row__parts_of_speech_const(self, pos_en, pos_ru):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 'INSERT INTO parts_of_speech_const (pos_en, pos_ru) VALUES (?, ?)',
                 (pos_en, pos_ru, )
             )
         # Обновить хеш
-        self.parts_of_speech_const = self.__get_parts_of_speech_const()
+        self.parts_of_speech_const = self.__get_all__parts_of_speech_const()
         return
 
-
-    async def __add_new_row_to_table__words(self, word: str, lang: str):
+    async def __add_row__words_enru(self, word: str, lang: str):
         """
         !Eсли слова (word) нет в тбл.(words_{lang}):
             добавляет слово (word) в указанную (lang) таблицу и возвращает ID новой записи
@@ -213,10 +211,10 @@ class DataBase:
             # на ст.ов.фл рекомендуют закрывать коннектор, но я хуй знает зачем, ведь тут менеджер контекста
             await conn.close()
         # Получает ID строки
-        word_id = await self.get_row_id_by_value_from_table__words(word, lang)
+        word_id = await self.get_row_id_by_value__words_enru(word, lang)
         return word_id
 
-    async def get_row_id_by_value_from_table__words(self, word: str, lang: str) -> int or False:
+    async def get_row_id_by_value__words_enru(self, word: str, lang: str) -> int or False:
         """
         Проверяет наличие слова в таблице указанного типа.
         Если слово есть - возвращает его табличый ID, нет - False
@@ -237,7 +235,7 @@ class DataBase:
             else:
                 return False
 
-    async def add_new_couple_to_table__translation_en_ru(self, word_en: str, word_ru: str, pos: str, freq: int):
+    async def add_row__translation_en_ru(self, word_en: str, word_ru: str, pos: str, freq: int):
         """
         Добавляет новую строку в таблицу translation_en_ru.
         Данная таблица - основной словарь, где лежит слово/перевод/часть речи/частота употребления в данном переводе
@@ -247,8 +245,8 @@ class DataBase:
         :param freq: int - число, указывающее на частоту употребления слова в данном переводе
         """
         # Получает табличные id слов (ищет существующие слова или добавляет в таблицу в случае отсутствия)
-        id_word_en = await self.__add_new_row_to_table__words(word_en, 'en')
-        id_word_ru = await self.__add_new_row_to_table__words(word_ru, 'ru')
+        id_word_en = await self.__add_row__words_enru(word_en, 'en')
+        id_word_ru = await self.__add_row__words_enru(word_ru, 'ru')
         # Получает табличные id части речи по его имени из атрибута объекта (типа кеш)
         try:
             id_pos = self.parts_of_speech_const[pos]['id']
@@ -263,7 +261,7 @@ class DataBase:
             )
             await conn.commit()
 
-    async def get_translations_word_by_id(self, word_id: int, lang: str = 'en'):
+    async def get_array_of_transl_word_by_id(self, word_id: int, lang: str = 'en') -> list or None:
         """
         Извлекает все связанные с английским словом переводы и всю сопутствующую информацию (часть речи, частота употр.)
         Возвращает список кортежей по схеме: [('en_word', 'ru_word', 'pos_en', 'pos_ru', frequency)]
@@ -311,7 +309,7 @@ class DataBase:
     ###
 
     #  ### START operations with user data tables BLOCK ###
-    async def add_new_user(self, user_id, user_api_key=None):
+    async def add_row__user_configs(self, user_id, user_api_key=None):
         async with aiosqlite.connect(self.db_path) as conn:
 
             await conn.execute(
@@ -321,17 +319,27 @@ class DataBase:
             await conn.commit()
             # на ст.ов.фл рекомендуют закрывать коннектор, но я хуй знает зачем, ведь тут менеджер контекста
             await conn.close()
+        return
 
-    async def check_user_in_table(self, user_id):
+    async def is_userid_in__user_configs(self, id_tg_user) -> bool:
         async with aiosqlite.connect(self.db_path) as conn:
             r = await conn.execute(
                 "SELECT * FROM user_configs WHERE id_tg_user = ?",
-                (user_id,)
+                (id_tg_user,)
             )
             data = await r.fetchone()
-            return bool(data)
+        return bool(data)
 
-    async def is_word_in_table__user_data_by_user_id(self, id_tg_user, id_word_en):
+    async def is_word_in__user_data(self, id_tg_user, id_word_en) -> bool:
+        async with aiosqlite.connect(self.db_path) as conn:
+            r = await conn.execute(
+                "SELECT * FROM user_data WHERE id_tg_user = ? AND id_word_en = ?",
+                (id_tg_user, id_word_en,)
+            )
+            data = await r.fetchone()
+        return bool(data)
+
+    async def add_row__user_data(self, id_tg_user, id_word_en, ) -> bool:
         async with aiosqlite.connect(self.db_path) as conn:
             r = await conn.execute(
                 "SELECT * FROM user_data WHERE id_tg_user = ? AND id_word_en = ?",

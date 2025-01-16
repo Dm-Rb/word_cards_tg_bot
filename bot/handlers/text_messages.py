@@ -22,16 +22,16 @@ async def user_word_handler(message: Message):
         await message.answer("🙅‍♂️ Cтрока содержит недопустимые символы (цифры, спецсимволы и т.д.)")
         return
     # Получить id, если это слово есть в базе данных
-    word_id = await database.get_row_id_by_value_from_table__words(word, lang)
+    word_id = await database.get_row_id_by_value__words_enru(word, lang)
     # Слово присутствует в БД.
     if word_id:
         # Извлекает все связанные данные c <word>
-        word_details: list[tuple] = await database.get_translations_word_by_id(word_id, lang)
+        word_details: list[tuple] = await database.get_array_of_transl_word_by_id(word_id, lang)
         if not word_details:
             await message.answer("Что то пошло не так, неопределённая ошибка")
             return
         # Проверяет, есть ли слово в личном словаре ТГ-Юзера
-        word_in_table_flag = await database.is_word_in_table__user_data_by_user_id(message.from_user.id, word_id)
+        word_in_table_flag = await database.is_word_in__user_data(message.from_user.id, word_id)
         # преобразует ответ из бд (список кортежей) в список словарей (тупо добавляет ключи к значениям)
         word_details: list[dict] = preparing_array_tuple2dict(word_details)
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
@@ -57,14 +57,14 @@ async def user_word_handler(message: Message):
             return
         #Добавляет ответ ya_dict_api_resp в БД
         for item in ya_dict_api_resp:
-            await database.add_new_couple_to_table__translation_en_ru(
+            await database.add_row__translation_en_ru(
                 item['word_en'], item['word_ru'], item['pos_en'], item['freq']
             )
-        word_id = await database.get_row_id_by_value_from_table__words(word, lang)
+        word_id = await database.get_row_id_by_value__words_enru(word, lang)
         if not word_id:
             return
         # Проверяет, есть ли слово в личном словаре ТГ-Юзера
-        word_in_table_flag = await database.is_word_in_table__user_data_by_user_id(message.from_user.id, word_id)
+        word_in_table_flag = await database.is_word_in__user_data(message.from_user.id, word_id)
 
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         # для красивого отображения в мессаге

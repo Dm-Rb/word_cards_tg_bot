@@ -34,7 +34,7 @@ class YandexDictionaryApi:
                     # Получает пару [pose_en, pos_ru]
                     pos_items = self.get_not_exist_pos(tr_item['pos'])
                     # Записывает пару в БД
-                    database.add_new_couple_to_table__parts_of_speech_const(*pos_items)
+                    database.add_row__parts_of_speech_const(*pos_items)
                     # Переинициализирует атрибут
                     self.db_pos = database.parts_of_speech_const
                 ### ---
