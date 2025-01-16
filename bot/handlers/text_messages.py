@@ -65,15 +65,16 @@ async def user_word_handler(message: Message):
 
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
 
-    # # Сообщение с инлайн клавиатурой
-    if word_in_table_flag:
-        reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
-        fuc_type = 'del'
-    else:
-        reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
-        fuc_type = 'add'
+    if lang == 'en':
+        # # Сообщение с инлайн клавиатурой
+        if word_in_table_flag:
+            reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
+            fuc_type = 'del'
+        else:
+            reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
+            fuc_type = 'add'
 
-    await message.answer(
-        text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word, word_id, user_id, fuc_type)
-    )
-
+        await message.answer(
+            text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word, word_id, user_id, fuc_type)
+        )
+    return
