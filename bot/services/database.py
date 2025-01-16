@@ -1,6 +1,7 @@
 import aiosqlite
 import sqlite3
 from pathlib import Path
+import datetime
 
 
 class DataBase:
@@ -339,12 +340,27 @@ class DataBase:
             data = await r.fetchone()
         return bool(data)
 
-    async def add_row__user_data(self, id_tg_user, id_word_en, ) -> bool:
+    async def add_row__user_data(self, id_tg_user, id_word_en, learning_level=0, last_review_datetime=None):
+        if not last_review_datetime:
+            last_review_datetime = datetime.datetime.now()
+            last_review_datetime = str(last_review_datetime.replace(microsecond=0))
         async with aiosqlite.connect(self.db_path) as conn:
-            r = await conn.execute(
-                "SELECT * FROM user_data WHERE id_tg_user = ? AND id_word_en = ?",
-                (id_tg_user, id_word_en,)
+            await conn.execute(
+                "INSERT INTO user_data (id_tg_user, id_word_en, learning_level, last_review_datetime) VALUES (?, ?, ?, ?)",
+                (id_tg_user, id_word_en, learning_level, last_review_datetime, )
             )
-            data = await r.fetchone()
-        return bool(data)
+            await conn.commit()
+            await conn.close()
+
+    async def del_row__user_data(self, id_tg_user, id_word_en):
+        async with aiosqlite.connect(self.db_path) as conn:
+            await conn.execute(
+                "DELETE FROM user_data WHERE id_tg_user = ? AND id_word_en = ?",
+                (id_tg_user, id_word_en, )
+            )
+            await conn.commit()
+            await conn.close()
+
+
+
 

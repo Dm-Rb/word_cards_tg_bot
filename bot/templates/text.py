@@ -1,5 +1,5 @@
 from bot.services.utils import frequency_word
-import emoji
+
 
 def start_command(user_first_name, is_new_user: bool) -> str:
     if not is_new_user:

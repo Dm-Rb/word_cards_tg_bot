@@ -23,6 +23,7 @@ async def user_word_handler(message: Message):
         return
     # Получить id, если это слово есть в базе данных
     word_id = await database.get_row_id_by_value__words_enru(word, lang)
+    user_id = message.from_user.id
     # Слово присутствует в БД.
     if word_id:
         # Извлекает все связанные данные c <word>
@@ -31,21 +32,13 @@ async def user_word_handler(message: Message):
             await message.answer("Что то пошло не так, неопределённая ошибка")
             return
         # Проверяет, есть ли слово в личном словаре ТГ-Юзера
-        word_in_table_flag = await database.is_word_in__user_data(message.from_user.id, word_id)
+        word_in_table_flag = await database.is_word_in__user_data(user_id, word_id)
         # преобразует ответ из бд (список кортежей) в список словарей (тупо добавляет ключи к значениям)
         word_details: list[dict] = preparing_array_tuple2dict(word_details)
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         word_details: dict = grouping_array_by_pos(word_details, lang)
         # Генерирует текст на базе шаблона
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
-
-        # # Сообщение с инлайн клавиатурой
-        if word_in_table_flag:
-            reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
-        else:
-            reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
-
-        await message.answer(text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word))
 
     # Слово отсутствует в БД, делаем запрос к API Yandex Dictionary
     else:
@@ -64,18 +57,23 @@ async def user_word_handler(message: Message):
         if not word_id:
             return
         # Проверяет, есть ли слово в личном словаре ТГ-Юзера
-        word_in_table_flag = await database.is_word_in__user_data(message.from_user.id, word_id)
+        word_in_table_flag = await database.is_word_in__user_data(user_id, word_id)
 
         # Преобразует список словарей в словарь. Группировка по частям речи (стакает переводы по частям речи)
         # для красивого отображения в мессаге
         word_details: dict = grouping_array_by_pos(ya_dict_api_resp, lang)
 
         await message.answer(text=preparing_message(word_details, lang), parse_mode='HTML')
-        # # Сообщение с инлайн клавиатурой
-        if word_in_table_flag:
-            reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
-        else:
-            reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
 
-        await message.answer(text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word))
+    # # Сообщение с инлайн клавиатурой
+    if word_in_table_flag:
+        reply_text = f"<b>{word.capitalize()}</b> уже добавлено в ваш словарь.\nУбрать из словаря?"
+        fuc_type = 'del'
+    else:
+        reply_text = f"<b>{word.capitalize()}</b>\nДобавить в ваш словарь для изучения?"
+        fuc_type = 'add'
+
+    await message.answer(
+        text=reply_text, parse_mode='HTML', reply_markup=get_kb__yes_no_answer(word, word_id, user_id, fuc_type)
+    )
 
