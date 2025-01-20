@@ -363,8 +363,14 @@ class DataBase:
                 (id_tg_user, id_word_en, )
             )
             await conn.commit()
-            await conn.close()
 
-
+    async def get_word_id_list_by_user_id__user_data(self, id_tg_user):
+        async with aiosqlite.connect(self.db_path) as conn:
+            r = await conn.execute(
+                "SELECT * FROM user_data WHERE id_tg_user = ?",
+                (id_tg_user, )
+            )
+            data = await r.fetchall()
+        return data
 
 
