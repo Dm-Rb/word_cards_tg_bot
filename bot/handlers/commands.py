@@ -2,12 +2,15 @@ from aiogram import Router, F
 from aiogram.types import Message
 from bot.templates import text
 from bot.globals import database
+from bot.services.words_training import words_training
+from bot.handlers.states import TrainingStates
+from aiogram.fsm.context import FSMContext
 
 
 # Импортируем функцию или объект для работы с базой данных
 # Создаем роутер для регистрации хендлеров
 router = Router()
-
+word_pairs = [("apple", "яблоко"), ("dog", "собака"), ("book", "книга")]
 
 @router.message(F.text.startswith("/start"))
 async def command_start_handler(message: Message):
@@ -28,3 +31,23 @@ async def command_start_handler(message: Message):
     # Если пользователя уже нет в базе (False), ничего не делаем
 
 
+@router.message(F.text.startswith("/training"))
+async def start_training(message: Message, state: FSMContext):
+    user_id = message.from_user.id  # Получаем ID пользователя
+    #
+    # d = await words_training.get_preparing_words_4_training(user_id)
+    await state.update_data(current_index=0)
+    await send_next_word(message, state)
+
+
+async def send_next_word(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_index = data.get('current_index', 0)
+
+    if current_index < len(word_pairs):
+        english_word = word_pairs[current_index][0]
+        await message.answer(f"Переведите слово: {english_word}")
+        await state.set_state(TrainingStates.waiting_for_translation)
+    else:
+        await message.answer("Тренировка завершена!")
+        await state.clear()
