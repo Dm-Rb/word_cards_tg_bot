@@ -31,11 +31,11 @@ async def command_start_handler(message: Message):
     # Если пользователя уже нет в базе (False), ничего не делаем
 
 
+
+
+# Обработка команды /training
 @router.message(F.text.startswith("/training"))
 async def start_training(message: Message, state: FSMContext):
-    user_id = message.from_user.id  # Получаем ID пользователя
-    #
-    # d = await words_training.get_preparing_words_4_training(user_id)
     await state.update_data(current_index=0)
     await send_next_word(message, state)
 
@@ -51,3 +51,23 @@ async def send_next_word(message: Message, state: FSMContext):
     else:
         await message.answer("Тренировка завершена!")
         await state.clear()
+
+@router.message(TrainingStates.waiting_for_translation)
+async def check_translation(message: Message, state: FSMContext):
+    data = await state.get_data()
+    current_index = data.get('current_index', 0)
+    correct_translation = word_pairs[current_index][1]
+
+    if message.text.lower() == correct_translation.lower():
+        await message.answer("Правильно!")
+    else:
+        await message.answer(f"Неправильно. Правильный ответ: {correct_translation}")
+
+    await state.update_data(current_index=current_index + 1)
+    await send_next_word(message, state)
+
+
+@router.message(F.text.startswith("/stop"))
+async def stop_training(message: Message, state: FSMContext):
+    await message.answer("Тренировка прервана.")
+    await state.clear()
