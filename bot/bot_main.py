@@ -26,6 +26,7 @@ async def main():
     await bot.set_my_commands([
         BotCommand(command="start", description="Запустить бота"),
         BotCommand(command="help", description="Помощь"),
+        BotCommand(command='training', description='Тренировать слова')
     ])
 
     # Запускаем long polling
