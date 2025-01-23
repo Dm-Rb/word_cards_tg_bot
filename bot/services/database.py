@@ -161,6 +161,10 @@ class DataBase:
     ###
 
     #  ### START operations with tables of main dictionary (en/ru words and their relationships) BLOCK ###
+    @staticmethod
+    def lang_validator(lang):
+        if lang not in ['en', 'ru']:
+            raise ValueError("Argument <lang> is not valid. It must be in ['en', 'ru']")
 
     def __get_all__parts_of_speech_const(self) -> dict:
         """
@@ -199,8 +203,7 @@ class DataBase:
 
         """
         # Проверяет валидность аргумента <lang>
-        if lang not in ['en', 'ru']:
-            raise ValueError("Argument <lang> is not valid. It must be in ['en', 'ru']")
+        self.lang_validator(lang)
 
         word_id = await self.get_row_id_by_value__words_enru(word, lang)
         if word_id:
@@ -228,8 +231,7 @@ class DataBase:
         :return: int or False - возвращает id слова или False
         """
         # Проверяет валидность аргумента <lang>
-        if lang not in ['en', 'ru']:
-            raise ValueError("Argument <lang> is not valid. It must be in ['en', 'ru']")
+        self.lang_validator(lang)
         # ---
         async with aiosqlite.connect(self.db_path) as conn:
             cursor = await conn.execute(f'SELECT id FROM words_{lang} WHERE word = ?', (word,))
@@ -373,4 +375,20 @@ class DataBase:
             data = await r.fetchall()
         return data
 
+    async def get_random_wrong_answers(self, ignored_words: list, quantity_words: int = 3, lang='ru'):
+        self.lang_validator(lang)
+        sql = f'SELECT word FROM words_{lang}'
+        if ignored_words:
+            ignored_words_str = ', '.join(f"'{word}'" for word in ignored_words)
+            sql += f' WHERE word NOT IN ({ignored_words_str})'
+        sql += f' ORDER BY RANDOM() LIMIT {str(quantity_words)};'
+
+        async with aiosqlite.connect(self.db_path) as conn:
+            r = await conn.execute(
+                sql
+            )
+            data = await r.fetchall()
+            if data:
+                data = [item[0] for item in data]
+        return data
 
