@@ -2,10 +2,12 @@ from bot.globals import database
 import pymorphy2
 from bot.services.utils import grouping_array_by_pos, preparing_array_tuple2dict
 
+
 class WordsTraining:
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
+        self.users_data = {}
 
     def get_lexemes(self, word: str) -> list:
         # Получаем все возможные разборы слова
@@ -39,7 +41,7 @@ class WordsTraining:
         unique_variants.remove(word)
         return unique_variants
 
-    async def get_preparing_words_4_training(self, user_id):
+    async def create_array_with_user_data(self, user_id):
         preparing_data = []
 
         user_data = await database.get_word_id_list_by_user_id__user_data(user_id)
@@ -47,18 +49,21 @@ class WordsTraining:
             return
 
         for item in user_data:
-            row = {'word_en_id': item[1], 'learning_level': item[2]}
             word_details = await database.get_array_of_transl_word_by_id(item[1])
             word_details = grouping_array_by_pos(preparing_array_tuple2dict(word_details))
             if not word_details:
                 continue
             # Получаем лексемы для каждого варианта перевода
             try:
-                for i in range(len(word_details['translation'])):
-                    for j in range(len((word_details['translation'][i]['words_list']))):
-                        lexemes = self.get_lexemes(word_details['translation'][i]['words_list'][j]['word'])
+                for i in range(len(word_details['translations'])):
+                    for j in range(len((word_details['translations'][i]['words_list']))):
+                        lexemes = self.get_lexemes(word_details['translations'][i]['words_list'][j]['word'])
                         # Добавляем варианты лексем в массив
-                        word_details['translation'][i]['words_list'][j]['lexemes'] = lexemes
+                        word_details['translations'][i]['words_list'][j]['lexemes'] = lexemes
+                # Добавляем информацию из <item>
+                word_details['word_en_id'] = item[1]
+                word_details['learning_level'] = item[2]
+
                 preparing_data.append(word_details)
             except TypeError:
                 print(TypeError)
@@ -66,7 +71,33 @@ class WordsTraining:
         #preparing_data = [{'word': 'run', 'lang': 'en', 'translation': [{'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'бежать', 'freq': 10, 'lexemes': []}, {'word': 'работать', 'freq': 10, 'lexemes': []}, {'word': 'запустить', 'freq': 10, 'lexemes': []}, {'word': 'проходить', 'freq': 5, 'lexemes': []}, {'word': 'управлять', 'freq': 5, 'lexemes': []}, {'word': 'выполнить', 'freq': 5, 'lexemes': []}, {'word': 'убежать', 'freq': 5, 'lexemes': []}, {'word': 'баллотироваться', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'бег', 'freq': 5, 'lexemes': ['беге', 'бега', 'бегом', 'бегу']}, {'word': 'запуск', 'freq': 5, 'lexemes': ['запуску', 'запуска', 'запуском', 'запуске']}, {'word': 'выполнение', 'freq': 5, 'lexemes': ['выполненью', 'выполненье', 'выполненья', 'выполнении', 'выполнением', 'выполненьем', 'выполнения', 'выполненьи', 'выполнению']}, {'word': 'пробег', 'freq': 1, 'lexemes': ['пробега', 'пробегом', 'пробегу', 'пробеге']}]}]}, {'word': 'sleep', 'lang': 'en', 'translation': [{'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'сон', 'freq': 10, 'lexemes': ['сна', 'сном', 'сне', 'сну']}, {'word': 'режим сна', 'freq': 1, 'lexemes': ['режим сон', 'режим сной', 'режим сне', 'режим сном', 'режим сною', 'режим сны', 'режим сну']}, {'word': 'ночлег', 'freq': 1, 'lexemes': ['ночлега', 'ночлегу', 'ночлеге', 'ночлегом']}, {'word': 'спячка', 'freq': 1, 'lexemes': ['спячкой', 'спячку', 'спячки', 'спячке', 'спячкою']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'ночевать', 'freq': 5, 'lexemes': []}, {'word': 'засыпать', 'freq': 5, 'lexemes': []}, {'word': 'поспать', 'freq': 5, 'lexemes': []}, {'word': 'дремать', 'freq': 1, 'lexemes': []}, {'word': 'спаться', 'freq': 1, 'lexemes': []}, {'word': 'отсыпаться', 'freq': 1, 'lexemes': []}, {'word': 'усыплять', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'сонный', 'freq': 1, 'lexemes': ['сонное', 'сонном', 'сонному', 'сонную', 'сонною', 'сонной', 'сонным', 'сонная', 'сонного']}]}]}]
         return preparing_data
 
-    def trainer_choice_word(self, word_en, word_ru, lexemes_ru, false_friends):
-        pass
+    def check_answer_without_context(self, answer, translation_item):
+        """
+        Эта функция проверяет перевод слова без контекста. Т.е для слова создаётся масси со всеми возможными переводами,
+        которые соответствуют части речи для этого слова.
+
+        :param answer:
+        :param translation_item:
+        :return:
+        """
+        array_check = []
+        for item in translation_item['words_list']:
+            array_check.append(item['word'].lower())
+            if item['lexemes']:
+                array_check.extend(item['lexemes'].lower())
+
+        return answer.lower() in array_check
+
+    async def get_user_data_array(self, user_id):
+        """
+        Функция-обёртка для запроса пользовательских данных (слова, добавленные для тренировки)
+        :param user_id:
+        :return:
+        """
+        if not self.users_data.get(user_id, None):
+            users_data = await self.create_array_with_user_data(user_id)
+            self.users_data[user_id] = users_data
+        return self.users_data[user_id]
+
 
 words_training = WordsTraining()
