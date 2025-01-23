@@ -16,7 +16,7 @@ def word_details(word_details_dict, lang):
     lags_emoji = {'en': '🇬🇧', 'ru': '🇷🇺'}
     message = ''
     message += f"<b>{word_details_dict['word'].capitalize()}</b>  {lags_emoji[lang]}"
-    for item_transl in word_details_dict['translation']:
+    for item_transl in word_details_dict['translations']:
         # Используем <i> с корректным закрытием </i>
         transl_text = f"\n📎 <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
         # Формируем список переведенных слов
