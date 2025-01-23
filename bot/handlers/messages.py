@@ -11,7 +11,7 @@ router = Router()
 
 
 @router.message(F.text)  # Хендлер срабатывает на любое текстовое сообщение
-async def user_word_handler(message: Message):
+async def default_handler(message: Message):
     """
     Допилить обработку API на русском!!!
     """
