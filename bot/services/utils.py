@@ -26,7 +26,7 @@ def preparing_array_tuple2dict(array: list[tuple]) -> list[dict] or None:
 
 def detect_language(text):
     # проверка на наличие только букв и пробелов
-    if not re.match("^[а-яА-Яa-zA-Z ]*$", text):
+    if not re.match("^[а-яА-Яa-zA-Z]*$", text):
         return False
 
     # проверка, является ли текст русским
@@ -46,7 +46,7 @@ def grouping_array_by_pos(word_details: list[dict], lang: str = 'en') -> dict or
     :return
     {   'word': str,
         'lang': str,
-        "translation":
+        "translations":
             [
                 {
                     "pos_en": 'str',
@@ -103,7 +103,7 @@ def grouping_array_by_pos(word_details: list[dict], lang: str = 'en') -> dict or
     result = {
         'word': word_main,
         'lang': lang,
-        'translation': translation
+        'translations': translation
     }
     return result
 
