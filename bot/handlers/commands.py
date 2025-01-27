@@ -28,13 +28,14 @@ async def command_start_handler(message: Message):
         )
     # Если пользователя уже нет в базе (False), ничего не делаем
 
-
+@router.message(F.text.startswith("/help"))
+async def command_start_handler(message: Message):
+    await message.answer(text='логика комманды /help в процессе запила')
 # Обработка команды /training
 
 @router.message(F.text.startswith("/training"))
 async def start_training(message: Message, state: FSMContext):
     await state.set_state(TrainingStates.waiting_for_translation)
-    await state.update_data(curr_i_translations=0, curr_i_main=0)
 
     await traversing_an_array(message, state)
 
