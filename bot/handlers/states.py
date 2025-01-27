@@ -13,57 +13,54 @@ class TrainingStates(StatesGroup):
 
 
 async def traversing_an_array(message: Message, state: FSMContext):
-    print("<traversing_an_array>")
+    """
+    Итерация по элементам списка с пользовательскими данными.
+    Массив думерный (внутри элемента массива имеет подмассив)
+    """
     user_id = message.from_user.id  # Получаем ID пользователя
     # Просим массив с данными для тренировки у объекта <words_training>
     user_data = await words_training.get_user_data_array(user_id)
-    # Получаем данные, которые хранятся в состоянии
-    state_data = await state.get_data()
-    # получаем из state_data индексы, по котым будем выдёргивать объект из массива user_data. В сущности тут механика обхода массива
-    curr_i_main = state_data.get('curr_i_main', 0)
-    curr_i_translations = state_data.get('curr_i_translations', 0)
-    print()
-    if curr_i_main < len(user_data) and curr_i_translations >= len(user_data[curr_i_main]['translations']):
-        curr_i_main += 1
-        curr_i_translations = 0
-
-    if curr_i_main >= len(user_data):
-        # тут можно впихнуть отображение результатов тренировкки
-        # сброс состояния, обход массива завершён
-        print('Обход завершён')
+    if not user_data:
+        await message.answer(text="Ваш словарь пуст. Сперва добавте слова для тенировки")
         await state.clear()
         return
-    await state.update_data(curr_i_translations=curr_i_translations, curr_i_main=curr_i_main)
+    # Получаем данные, которые хранятся в состоянии
+    state_data = await state.get_data()
+    # Получаем из state_data индексы, по котым будем обращаться к объектам массива user_data.
+    index_array = state_data.get('index_array', 0)
+    index_subarray = state_data.get('index_subarray', 0)
+    # Если индекс подмассива перевалил за len подмассива, перейти к следующему элемету массива (на верхнем уровне).
+    if index_array < len(user_data) and index_subarray >= len(user_data[index_array]['translations']):
+        index_array += 1
+        index_subarray = 0
+    # Если индекс элементов верхнего уровня больше или равно len массива - обход закончен
+    if index_array >= len(user_data):
+        # тут можно впихнуть отображение результатов тренировкки
+        # сброс состояния, обход массива завершён
+        await message.answer(text=words_training.show_statistic(user_id), parse_mode='HTML')
+        # await message.answer(text=show_statistic(user_id))
+        await state.clear()
+        return
+    # Записывает индексы в хранилище объекта состояния
+    await state.update_data(index_subarray=index_subarray, index_array=index_array)
+    state_data = await state.get_data()
     ###
-    learning_word = user_data[curr_i_main]['word']
-    learning_word_lang = user_data[curr_i_main]['lang']
-    pos_en = user_data[curr_i_main]['translations'][curr_i_translations]['pos_en']
-    pos_ru = user_data[curr_i_main]['translations'][curr_i_translations]['pos_ru']
-    translation_words_list = user_data[curr_i_main]['translations'][curr_i_translations]['words_list']
-
-    # Эмуляция отправци сообщения с вопросом пользователю
-    print('тут эмуляция сообщения для пользователя')
-    print(learning_word, pos_en, translation_words_list)
-
-
+    message_text = words_training.sent_question_without_context(user_id, index_array, index_subarray)
+    await message.answer(text=message_text, parse_mode='HTML')
 
 @router.message(TrainingStates.waiting_for_translation)
 async def check_translation(message: Message, state: FSMContext):
-    print("<check_translation>")
     state_data = await state.get_data()
-    curr_i_main = state_data.get('curr_i_main', 0)
-    curr_i_translations = state_data.get('curr_i_translations', 0)
-    print('тут получаем элемент массива по индексам как в <traversing_an_array>')
-    print('передаём ответ и элемент массива в обработчик')
-    if message.text == 'Да':
-        print('Выход из состояния')
-        await state.clear()
+    index_array = state_data.get('index_array', 0)
+    index_subarray = state_data.get('index_subarray', 0)
+    # Проверяем ответ пользователя
+    words_training.check_answer_without_context(message.text, message.from_user.id, index_array, index_subarray)
 
     #  инкрементируемся по единице на каждый индекс
-    curr_i_translations += 1
+    index_subarray += 1
 
     # аписываем в state
-    await state.update_data(curr_i_translations=curr_i_translations)
+    await state.update_data(index_subarray=index_subarray)
     # вызываем функцию обхода массива
     await traversing_an_array(message, state)
 
