@@ -110,10 +110,8 @@ class WordsTraining:
         else:
             self.users_training_statistics[user_id].append(statistic_item)
 
-    def show_statistic(self, user_id):
-        results = self.users_training_statistics[user_id]
-
-        return show_statistic_training(results)
+    def show_training_result(self, user_id):
+        return show_statistic_training(self.users_training_statistics[user_id])
 
     async def get_user_data_array(self, user_id):
         """

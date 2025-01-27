@@ -36,11 +36,11 @@ async def command_start_handler(message: Message):
 @router.message(F.text.startswith("/training"))
 async def start_training(message: Message, state: FSMContext):
     await state.set_state(TrainingStates.waiting_for_translation)
-
     await traversing_an_array(message, state)
 
-
-
+@router.message(F.text.startswith("/break"))
+async def stop_training(state: FSMContext):
+    await state.clear()
 
 # @router.message(TrainingStates.waiting_for_translation)
 # async def check_translation(message: Message, state: FSMContext):
@@ -57,7 +57,3 @@ async def start_training(message: Message, state: FSMContext):
 #     await send_next_word(message, state)
 
 
-@router.message(F.text.startswith("/break"))
-async def stop_training(message: Message, state: FSMContext):
-    await message.answer("Прервано принудительно")
-    await state.clear()
