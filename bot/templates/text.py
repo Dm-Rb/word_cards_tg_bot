@@ -23,3 +23,24 @@ def word_details(word_details_dict, lang):
         transl_text += ', '.join([f"{item['word']} <i>({frequency_word(item['freq'])})</i>" for item in item_transl['words_list']])
         message += '\n' + transl_text
     return message
+
+def question_without_context(word, pos_en, pos_ru):
+    message = ''
+    message += f"<b>{word.capitalize()}</b>\n"
+    message += f"📎 <i>{pos_en}/{pos_ru}:</i>\n"
+    return message
+
+def show_statistic_training(results):
+    answers = ''
+    wrong_count = 0
+    correct_counter = 0
+    for item in results:
+        if item['answer_is_correct']:
+            correct_counter += 1
+        else:
+            wrong_count += 1
+            answers += f"<b>{item['word']}</b> <i>{item['pos']}</i> ➡️ ваш ответ: 🔴{item['user_answer']}\n"
+
+    message = f'✅ Верных ответов: {str(correct_counter)}\n❌ Неверных ответов: {str(wrong_count)}'
+    return message
+
