@@ -24,9 +24,10 @@ def word_details(word_details_dict, lang):
         message += '\n' + transl_text
     return message
 
-def question_without_context(word, pos_en, pos_ru):
+def question_without_context(word, pos_en, pos_ru, lang='en'):
+    lags_emoji = {'en': '🇬🇧', 'ru': '🇷🇺'}
     message = ''
-    message += f"<b>{word.capitalize()}</b>\n"
+    message += f"<b>{word.capitalize()}</b> {lags_emoji[lang]}\n"
     message += f"📎 <i>{pos_en}/{pos_ru}:</i>\n"
     return message
 
@@ -39,10 +40,10 @@ def show_statistic_training(results):
             correct_counter += 1
         else:
             wrong_count += 1
-            answers += f"<b>{item['word']}</b> <i>({item['pos']})</i> ваш ответ: 🔴 {item['user_answer']}\n"
+            answers += f"\n🇬🇧️ <b>{item['word'].capitalize()}</b> <i>({item['pos']})</i>\n🔴 ваш ответ: {item['user_answer'].lower()}\n🟢 правильный ответ(ы): {', '.join(item['correct_words'])}\n"
 
     message = f'✅ Верных ответов: {str(correct_counter)}\n❌ Неверных ответов: {str(wrong_count)}'
     if answers:
-        message = message + '\n\nСписок неверный ответов:\n' + answers
+        message = message + '\n\nРабота над ошибками:\n' + answers
     return message
 

@@ -88,18 +88,21 @@ class WordsTraining:
         """
         word = self.users_data[user_id][i_array]['word']
         translations = self.users_data[user_id][i_array]['translations'][i_subarray]
-        array_check = []
+        words = []
+        lexemes = []
         for item in translations['words_list']:
-            array_check.append(item['word'].lower())
+            words.append(item['word'].lower())
             if item['lexemes']:
-                array_check.extend(item.lower() for item in item['lexemes'])
+                lexemes.extend(item.lower() for item in item['lexemes'])
 
-        is_correct = answer.lower() in array_check
+        is_correct = answer.lower() in words or answer.lower() in lexemes
         statistic_item = {
             'word': word,
             "pos": translations["pos_en"],
             'user_answer': answer,
-            "answer_is_correct": is_correct
+            "answer_is_correct": is_correct,
+            "correct_words": words
+
         }
         if not self.users_training_statistics.get(user_id, None):
             # self.users_training_statistics[user_id]['start_datetime'] = datetime.datetime.now()
