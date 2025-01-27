@@ -1,13 +1,16 @@
+import datetime
+
 from bot.globals import database
 import pymorphy2
 from bot.services.utils import grouping_array_by_pos, preparing_array_tuple2dict
-
+from bot.templates.text import question_without_context, show_statistic_training
 
 class WordsTraining:
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
         self.users_data = {}
+        self.users_training_statistics = {}
 
     def get_lexemes(self, word: str) -> list:
         # Получаем все возможные разборы слова
@@ -71,22 +74,43 @@ class WordsTraining:
         #preparing_data = [{'word': 'run', 'lang': 'en', 'translation': [{'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'бежать', 'freq': 10, 'lexemes': []}, {'word': 'работать', 'freq': 10, 'lexemes': []}, {'word': 'запустить', 'freq': 10, 'lexemes': []}, {'word': 'проходить', 'freq': 5, 'lexemes': []}, {'word': 'управлять', 'freq': 5, 'lexemes': []}, {'word': 'выполнить', 'freq': 5, 'lexemes': []}, {'word': 'убежать', 'freq': 5, 'lexemes': []}, {'word': 'баллотироваться', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'бег', 'freq': 5, 'lexemes': ['беге', 'бега', 'бегом', 'бегу']}, {'word': 'запуск', 'freq': 5, 'lexemes': ['запуску', 'запуска', 'запуском', 'запуске']}, {'word': 'выполнение', 'freq': 5, 'lexemes': ['выполненью', 'выполненье', 'выполненья', 'выполнении', 'выполнением', 'выполненьем', 'выполнения', 'выполненьи', 'выполнению']}, {'word': 'пробег', 'freq': 1, 'lexemes': ['пробега', 'пробегом', 'пробегу', 'пробеге']}]}]}, {'word': 'sleep', 'lang': 'en', 'translation': [{'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'сон', 'freq': 10, 'lexemes': ['сна', 'сном', 'сне', 'сну']}, {'word': 'режим сна', 'freq': 1, 'lexemes': ['режим сон', 'режим сной', 'режим сне', 'режим сном', 'режим сною', 'режим сны', 'режим сну']}, {'word': 'ночлег', 'freq': 1, 'lexemes': ['ночлега', 'ночлегу', 'ночлеге', 'ночлегом']}, {'word': 'спячка', 'freq': 1, 'lexemes': ['спячкой', 'спячку', 'спячки', 'спячке', 'спячкою']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'ночевать', 'freq': 5, 'lexemes': []}, {'word': 'засыпать', 'freq': 5, 'lexemes': []}, {'word': 'поспать', 'freq': 5, 'lexemes': []}, {'word': 'дремать', 'freq': 1, 'lexemes': []}, {'word': 'спаться', 'freq': 1, 'lexemes': []}, {'word': 'отсыпаться', 'freq': 1, 'lexemes': []}, {'word': 'усыплять', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'сонный', 'freq': 1, 'lexemes': ['сонное', 'сонном', 'сонному', 'сонную', 'сонною', 'сонной', 'сонным', 'сонная', 'сонного']}]}]}]
         return preparing_data
 
-    def check_answer_without_context(self, answer, translation_item):
-        """
-        Эта функция проверяет перевод слова без контекста. Т.е для слова создаётся масси со всеми возможными переводами,
-        которые соответствуют части речи для этого слова.
 
-        :param answer:
-        :param translation_item:
-        :return:
+    def sent_question_without_context(self, user_id, i_array, i_subarray):
+        word = self.users_data[user_id][i_array]['word']
+        pos_en = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_en']
+        pos_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_ru']
+        return question_without_context(word, pos_en, pos_ru)
+
+    def check_answer_without_context(self, answer, user_id, i_array, i_subarray):
         """
+        Эта функция проверяет перевод слова без контекста. Т.е для слова создаётся массив со всеми возможными переводами,
+        которые соответствуют части речи для этого слова.
+        """
+        word = self.users_data[user_id][i_array]['word']
+        translations = self.users_data[user_id][i_array]['translations'][i_subarray]
         array_check = []
-        for item in translation_item['words_list']:
+        for item in translations['words_list']:
             array_check.append(item['word'].lower())
             if item['lexemes']:
-                array_check.extend(item['lexemes'].lower())
+                array_check.extend(item.lower() for item in item['lexemes'])
 
-        return answer.lower() in array_check
+        is_correct = answer.lower() in array_check
+        statistic_item = {
+            'word': word,
+            "pos": translations["pos_en"],
+            'user_answer': answer,
+            "answer_is_correct": is_correct
+        }
+        if not self.users_training_statistics.get(user_id, None):
+            # self.users_training_statistics[user_id]['start_datetime'] = datetime.datetime.now()
+            self.users_training_statistics[user_id] = [statistic_item]
+        else:
+            self.users_training_statistics[user_id].append(statistic_item)
+
+    def show_statistic(self, user_id):
+        results = self.users_training_statistics[user_id]
+
+        return show_statistic_training(results)
 
     async def get_user_data_array(self, user_id):
         """
