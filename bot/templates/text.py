@@ -39,8 +39,10 @@ def show_statistic_training(results):
             correct_counter += 1
         else:
             wrong_count += 1
-            answers += f"<b>{item['word']}</b> <i>{item['pos']}</i> ➡️ ваш ответ: 🔴{item['user_answer']}\n"
+            answers += f"<b>{item['word']}</b> <i>({item['pos']})</i> ваш ответ: 🔴 {item['user_answer']}\n"
 
     message = f'✅ Верных ответов: {str(correct_counter)}\n❌ Неверных ответов: {str(wrong_count)}'
+    if answers:
+        message = message + '\n\nСписок неверный ответов:\n' + answers
     return message
 
