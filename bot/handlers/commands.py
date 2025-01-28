@@ -4,6 +4,7 @@ from bot.templates import text
 from bot.globals import database
 from bot.handlers.states import TrainingStates, traversing_an_array
 from aiogram.fsm.context import FSMContext
+from bot.services.words_training import words_training
 
 
 # Создаем роутер для регистрации хендлеров
@@ -31,16 +32,22 @@ async def command_start_handler(message: Message):
 @router.message(F.text.startswith("/help"))
 async def command_start_handler(message: Message):
     await message.answer(text='логика комманды /help в процессе запила')
-# Обработка команды /training
+
 
 @router.message(F.text.startswith("/training"))
 async def start_training(message: Message, state: FSMContext):
     await state.set_state(TrainingStates.waiting_for_translation)
     await traversing_an_array(message, state)
 
+
 @router.message(F.text.startswith("/break"))
-async def stop_training(state: FSMContext):
-    await state.clear()
+async def stop_training(message: Message, state: FSMContext):
+    try:
+        words_training.users_training_statistics[message.from_user.id].clear()
+        await state.clear()
+    except KeyError:
+        return
+
 
 # @router.message(TrainingStates.waiting_for_translation)
 # async def check_translation(message: Message, state: FSMContext):
