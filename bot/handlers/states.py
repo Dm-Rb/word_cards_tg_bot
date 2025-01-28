@@ -38,12 +38,15 @@ async def traversing_an_array(message: Message, state: FSMContext):
         # сброс состояния, обход массива завершён
         await message.answer(text=words_training.show_training_result(user_id), parse_mode='HTML')
         await state.clear()
+        # Очищаем объект со результатами тренинга
+        words_training.users_training_statistics[user_id].clear()
         return
     # Записывает индексы в хранилище объекта состояния
     await state.update_data(index_subarray=index_subarray, index_array=index_array)
     ###
-    message_text = words_training.sent_question_without_context(user_id, index_array, index_subarray)
+    message_text = words_training.return_question_without_context(user_id, index_array, index_subarray)
     await message.answer(text=message_text, parse_mode='HTML')
+
 
 @router.message(TrainingStates.waiting_for_translation)
 async def check_translation(message: Message, state: FSMContext):
