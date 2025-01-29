@@ -30,7 +30,7 @@ def question_without_context(word, pos_en, pos_ru, random_translation_ru, lang='
     lags_emoji = {'en': '🇬🇧', 'ru': '🇷🇺'}
     message = ''
     message += f"Слово:  <b>{word.capitalize()}</b> {lags_emoji[lang]}\n"
-    message += f"⇨ Часть речи:  <i>{pos_en}/{pos_ru}</i>\n"
+    message += f"⇨ <i>{pos_en}/{pos_ru}</i>\n"
     if random_translation_ru and len(random_translation_ru) >= 3:
         message += f'⇨ Подсказка:  {random_translation_ru[0].upper()}'\
                    f'{"".join(["*" for _ in range(len(random_translation_ru) - 2)])}' \
