@@ -94,6 +94,9 @@ class WordsTraining:
         # Выбрать рандомный перевод для слова из списка переводов
         random_translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
         random_translation_ru = random_translation_ru.get('word', None)
+        if not random_translation_ru:
+            return None
+        random_translation_ru = random_translation_ru.capitalize()
         # Выбрать 3 рандомные слова ru СТРОГО ИСКЛЮЧАЯ слова являющиеся переводами для word_en
         random_words_ru = sample(self.users_data[user_id][i_array]['random_words_ru'], 3)
 
