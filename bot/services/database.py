@@ -392,7 +392,7 @@ class DataBase:
             )
             data = await r.fetchall()
             if data:
-                data = [item[0] for item in data]
+                data = [item[0].capitalize() for item in data]
         return data
 
     # def get_random_wrong_answers_ru(self, ignored_word_en, quantity_words: int = 10):

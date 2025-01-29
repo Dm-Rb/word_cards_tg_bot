@@ -6,6 +6,7 @@ from bot.handlers.states import TrainingStates, traversing_an_array
 from aiogram.fsm.context import FSMContext
 from bot.services.words_training import words_training
 
+from aiogram.types import Message, ReplyKeyboardRemove
 
 # Создаем роутер для регистрации хендлеров
 router = Router()
@@ -45,6 +46,8 @@ async def stop_training(message: Message, state: FSMContext):
     try:
         words_training.users_training_statistics[message.from_user.id].clear()
         await state.clear()
+        await message.answer(text='Прервано',
+                             reply_markup=ReplyKeyboardRemove())
     except KeyError:
         return
 
