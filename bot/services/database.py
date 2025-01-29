@@ -375,20 +375,37 @@ class DataBase:
             data = await r.fetchall()
         return data
 
-    async def get_random_wrong_answers(self, ignored_words: list, quantity_words: int = 3, lang='ru'):
-        self.lang_validator(lang)
-        sql = f'SELECT word FROM words_{lang}'
-        if ignored_words:
-            ignored_words_str = ', '.join(f"'{word}'" for word in ignored_words)
-            sql += f' WHERE word NOT IN ({ignored_words_str})'
-        sql += f' ORDER BY RANDOM() LIMIT {str(quantity_words)};'
+    async def get_random_wrong_answers(self, ignored_word_en, quantity_words: int = 10):
+        sql = f"""
+        SELECT word FROM words_ru WHERE id IN (
+            SELECT id_word_ru 
+            FROM translation_en_ru 
+            WHERE id_word_en != (SELECT id FROM words_en WHERE word = ?)
+            ORDER BY RANDOM()
+            LIMIT {str(quantity_words)}
+        );
+        """
 
         async with aiosqlite.connect(self.db_path) as conn:
             r = await conn.execute(
-                sql
+                sql,(ignored_word_en,)
             )
             data = await r.fetchall()
             if data:
                 data = [item[0] for item in data]
         return data
+
+    # def get_random_wrong_answers_ru(self, ignored_word_en, quantity_words: int = 10):
+    #     sql = f"""
+    #     SELECT word FROM words_ru WHERE id IN (
+    #     SELECT id_word_ru
+    #     FROM translation_en_ru
+    #     WHERE id_word_en != (SELECT id FROM words_en WHERE word = ?)
+    #     ORDER BY RANDOM()
+    #     LIMIT {str(quantity_words)});
+    #     """
+    #     with sqlite3.connect(self.db_path) as conn:
+    #         r = conn.execute(sql, (ignored_word_en,)).fetchall()
+    #
+    #         return [item[0] for item in r]
 
