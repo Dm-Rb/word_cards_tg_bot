@@ -1,6 +1,6 @@
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from bot.services.words_training import words_training
 
@@ -36,7 +36,8 @@ async def traversing_an_array(message: Message, state: FSMContext):
     # Если индекс элементов верхнего уровня больше или равно len массива - обход закончен
     if index_array >= len(user_data):
         # сброс состояния, обход массива завершён
-        await message.answer(text=words_training.show_training_result(user_id), parse_mode='HTML')
+        await message.answer(text=words_training.show_training_result(user_id), parse_mode='HTML',
+                             reply_markup=ReplyKeyboardRemove())
         await state.clear()
         # Очищаем объект со результатами тренинга
         words_training.users_training_statistics[user_id].clear()
@@ -44,8 +45,14 @@ async def traversing_an_array(message: Message, state: FSMContext):
     # Записывает индексы в хранилище объекта состояния
     await state.update_data(index_subarray=index_subarray, index_array=index_array)
     ###
-    message_text = words_training.return_question_without_context(user_id, index_array, index_subarray)
-    await message.answer(text=message_text, parse_mode='HTML')
+    message_text = words_training.get_question_without_context(user_id, index_array, index_subarray)
+    kb_switch = True
+    if kb_switch:
+        keyboard = words_training.generate_keyboard(user_id, index_array, index_subarray)
+    else:
+        keyboard = None
+
+    await message.answer(text=message_text, parse_mode='HTML', reply_markup=keyboard)
 
 
 @router.message(TrainingStates.waiting_for_translation)
@@ -61,3 +68,6 @@ async def check_translation(message: Message, state: FSMContext):
     await state.update_data(index_subarray=index_subarray)
     # вызываем функцию обхода массива
     await traversing_an_array(message, state)
+
+
+
