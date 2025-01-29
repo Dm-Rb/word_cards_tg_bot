@@ -1,10 +1,9 @@
-import datetime
-
 from bot.globals import database
 import pymorphy2
 from bot.services.utils import grouping_array_by_pos, preparing_array_tuple2dict
 from bot.templates.text import question_without_context, show_statistic_training
-from random import choice
+from bot.keyboards.reply import kb_with_answer_options
+from random import choice, sample, shuffle
 
 class WordsTraining:
 
@@ -67,10 +66,11 @@ class WordsTraining:
                         lexemes = self.get_lexemes(word_details['translations'][i]['words_list'][j]['word'])
                         # Добавляем варианты лексем в массив
                         word_details['translations'][i]['words_list'][j]['lexemes'] = lexemes
+
                 # Добавляем информацию из <item>
                 word_details['word_en_id'] = item[1]
                 word_details['learning_level'] = item[2]
-
+                word_details['random_words_ru'] = await database.get_random_wrong_answers(word_details['word'])
                 preparing_data.append(word_details)
             except TypeError:
                 print(TypeError)
@@ -78,16 +78,28 @@ class WordsTraining:
         #preparing_data = [{'word': 'run', 'lang': 'en', 'translations': [{'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'бежать', 'freq': 10, 'lexemes': []}, {'word': 'работать', 'freq': 10, 'lexemes': []}, {'word': 'запустить', 'freq': 10, 'lexemes': []}, {'word': 'проходить', 'freq': 5, 'lexemes': []}, {'word': 'управлять', 'freq': 5, 'lexemes': []}, {'word': 'выполнить', 'freq': 5, 'lexemes': []}, {'word': 'убежать', 'freq': 5, 'lexemes': []}, {'word': 'баллотироваться', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'бег', 'freq': 5, 'lexemes': ['беге', 'бега', 'бегом', 'бегу']}, {'word': 'запуск', 'freq': 5, 'lexemes': ['запуску', 'запуска', 'запуском', 'запуске']}, {'word': 'выполнение', 'freq': 5, 'lexemes': ['выполненью', 'выполненье', 'выполненья', 'выполнении', 'выполнением', 'выполненьем', 'выполнения', 'выполненьи', 'выполнению']}, {'word': 'пробег', 'freq': 1, 'lexemes': ['пробега', 'пробегом', 'пробегу', 'пробеге']}]}]}, {'word': 'sleep', 'lang': 'en', 'translation': [{'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'сон', 'freq': 10, 'lexemes': ['сна', 'сном', 'сне', 'сну']}, {'word': 'режим сна', 'freq': 1, 'lexemes': ['режим сон', 'режим сной', 'режим сне', 'режим сном', 'режим сною', 'режим сны', 'режим сну']}, {'word': 'ночлег', 'freq': 1, 'lexemes': ['ночлега', 'ночлегу', 'ночлеге', 'ночлегом']}, {'word': 'спячка', 'freq': 1, 'lexemes': ['спячкой', 'спячку', 'спячки', 'спячке', 'спячкою']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'ночевать', 'freq': 5, 'lexemes': []}, {'word': 'засыпать', 'freq': 5, 'lexemes': []}, {'word': 'поспать', 'freq': 5, 'lexemes': []}, {'word': 'дремать', 'freq': 1, 'lexemes': []}, {'word': 'спаться', 'freq': 1, 'lexemes': []}, {'word': 'отсыпаться', 'freq': 1, 'lexemes': []}, {'word': 'усыплять', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'сонный', 'freq': 1, 'lexemes': ['сонное', 'сонном', 'сонному', 'сонную', 'сонною', 'сонной', 'сонным', 'сонная', 'сонного']}]}]}]
         return preparing_data
 
-    def return_question_without_context(self, user_id, i_array, i_subarray, clue=False):
+    def get_question_without_context(self, user_id, i_array, i_subarray, clue=False):
         word = self.users_data[user_id][i_array]['word']
         pos_en = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_en']
         pos_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_ru']
         if clue:
+            # Выбрать рандомный перевод для слова из списка переводов
             random_translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
             random_translation_ru = random_translation_ru.get('word', None)
         else:
             random_translation_ru = None
         return question_without_context(word, pos_en, pos_ru, random_translation_ru)
+
+    def generate_keyboard(self, user_id, i_array, i_subarray):
+        # Выбрать рандомный перевод для слова из списка переводов
+        random_translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
+        random_translation_ru = random_translation_ru.get('word', None)
+        # Выбрать 3 рандомные слова ru СТРОГО ИСКЛЮЧАЯ слова являющиеся переводами для word_en
+        random_words_ru = sample(self.users_data[user_id][i_array]['random_words_ru'], 3)
+
+        random_words_ru.append(random_translation_ru)
+        shuffle(random_words_ru)
+        return kb_with_answer_options(random_words_ru)
 
     def check_answer_without_context(self, answer: str, user_id: str, i_array: int, i_subarray: int):
         """
