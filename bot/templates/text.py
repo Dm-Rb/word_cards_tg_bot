@@ -17,13 +17,30 @@ def word_details(word_details_dict, lang):
     message = ''
     message += f"<b>{word_details_dict['word'].capitalize()}</b>  {lags_emoji[lang]}"
     for item_transl in word_details_dict['translations']:
+
         # Используем <i> с корректным закрытием </i>
-        transl_text = f"\n📎 <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
+        transl_text = f"\n⇨ <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
         # Формируем список переведенных слов
-        transl_text += \
-            ', '.join([f"{item['word']} <i>({frequency_word(item['freq'])})</i>" for item in item_transl['words_list']])
+        transl_text += preparing_word_list_item(item_transl['words_list'])
+        # transl_text += \
+        #     ', '.join([f"{item['word']} <i>({frequency_word(item['freq'])})</i>" for item in item_transl['words_list']])
         message += '\n' + transl_text
     return message
+
+def preparing_word_list_item(data):
+    grouped = {}
+    for item in data:
+        freq = frequency_word(int(item['freq']))
+        freq = f"➖<i>({freq})</i>"
+        word = item['word']
+        if freq not in grouped:
+            grouped[freq] = []
+        grouped[freq].append(word)
+
+    # # Преобразуем результат в нужный формат
+    result = [freq + '\n' + ', '.join(words) for freq, words in grouped.items()]
+    result = '\n'.join(result)
+    return f"<blockquote>{result}</blockquote>"
 
 
 def question_without_context(word, pos_en, pos_ru, random_translation_ru, lang='en'):
