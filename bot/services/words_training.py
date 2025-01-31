@@ -101,9 +101,10 @@ class WordsTraining:
             # Если уровень изученности слова меньше кофициента 2 - дать подсказку с вариантом самого частого перевода
             # (массив с переводами отсортирован по неубыванию в ключе частоты использования)
             # Иначе выбрать подсказку рандомно
-            if self.users_data[user_id][i_array]['learning_level'] < 3:
+            if self.users_data[user_id][i_array]['learning_level'] < 5:
                 translation_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'][0]
                 translation_ru = translation_ru.get('word', None)
+
             else:
                 # Выбрать рандомный перевод для слова из списка переводов
                 translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
@@ -174,6 +175,7 @@ class WordsTraining:
             print('Реализовать тут метод или функцию с отображениеми слова с переводами как в базовом хендлере. Типа запоминание')
             pass
         elif 3 > word_level >= 1:
+            pass
             response['keyboard'] = self.generate_keyboard(user_id, i_array, i_subarray)
             response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray)
             return response
