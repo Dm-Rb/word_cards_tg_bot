@@ -17,7 +17,6 @@ def word_details(word_details_dict, lang):
     message = ''
     message += f"<b>{word_details_dict['word'].capitalize()}</b>  {lags_emoji[lang]}"
     for item_transl in word_details_dict['translations']:
-
         # Используем <i> с корректным закрытием </i>
         transl_text = f"\n⇨ <i>{item_transl['pos_en']}/{item_transl['pos_ru']}:</i>\n"
         # Формируем список переведенных слов
@@ -43,17 +42,31 @@ def preparing_word_list_item(data):
     return f"<blockquote>{result}</blockquote>"
 
 
-def question_without_context(word, pos_en, pos_ru, random_translation_ru, lang='en'):
+def question_without_context(word, pos_en, pos_ru, translation_ru=None, lang='en'):
+    # random_translation_ru - это слово-перевод, который будет использоваться в качестве подсказки
+    # Если None, то подсказки не будет
     lags_emoji = {'en': '🇬🇧', 'ru': '🇷🇺'}
     message = ''
     message += f"{lags_emoji[lang]} <b>{word.capitalize()}</b>\n"
     message += f"⇨ <i>{pos_en}/{pos_ru}</i>\n"
-    if random_translation_ru and len(random_translation_ru) >= 3:
-        message += f'⇨ Подсказка:  {random_translation_ru[0].upper()}'\
-                   f'{"".join(["*" for _ in range(len(random_translation_ru) - 2)])}' \
-                   f'{random_translation_ru[-1].upper()}\n'
+    if translation_ru:
+        message += f'⇨ Подсказка:  {preparing_translation_ru_word(translation_ru)}\n'
     message += '\n🚫 <i>прервать тренировку</i> /break'
     return message
+
+
+def preparing_translation_ru_word(translation_ru):
+    result = ''
+    slices = len(translation_ru) // 2
+    for i in range(len(translation_ru)):
+        if i <= slices:
+            result += f'<tg-spoiler>{translation_ru[i]}</tg-spoiler>'
+        else:
+            if translation_ru[i] != ' ':
+                result += '*'
+            else:
+                result += ' '
+    return result
 
 
 def show_statistic_training(results):
