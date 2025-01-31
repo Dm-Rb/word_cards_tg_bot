@@ -45,14 +45,8 @@ async def traversing_an_array(message: Message, state: FSMContext):
     # Записывает индексы в хранилище объекта состояния
     await state.update_data(index_subarray=index_subarray, index_array=index_array)
     ###
-    message_text = words_training.get_question_without_context(user_id, index_array, index_subarray)
-    kb_switch = True
-    if kb_switch:
-        keyboard = words_training.generate_keyboard(user_id, index_array, index_subarray)
-    else:
-        keyboard = None
-
-    await message.answer(text=message_text, parse_mode='HTML', reply_markup=keyboard)
+    question_data = words_training.questions_controller(user_id, index_array, index_subarray)
+    await message.answer(text=question_data['message_text'], parse_mode='HTML', reply_markup=question_data['keyboard'])
 
 
 @router.message(TrainingStates.waiting_for_translation)
