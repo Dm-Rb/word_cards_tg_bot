@@ -9,10 +9,13 @@ class WordsTraining:
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
-        self.users_data = {}
-        self.users_training_statistics = {}
+        self.users_data = {}  # содержит пользовательские данные со словами. telegram-user-id ключ для каждого объекта
+        self.users_training_statistics = {} # содержит пользовательские результаты ответов на вопросы
 
     def get_lexemes(self, word: str) -> list:
+        """
+        Метод возвращает список всех доступныъ лексем (форм) слова, которое передали аргументом
+        """
         # Получаем все возможные разборы слова
         parsed_word = self.morph.parse(word)
 
@@ -47,7 +50,13 @@ class WordsTraining:
             pass
         return unique_variants
 
-    async def create_array_with_user_data(self, user_id):
+    async def get_array_with_user_data(self, user_id) -> list or None:
+        """
+        Возвращает массив с пользовательскими данными из базы данных.
+        После получения из БД структура данных форматируются некоторым образом.
+        Сформированный в том или ином виде будет лежать в self.users_data и использоваться для отображения пользователю
+        """
+
         preparing_data = []
 
         user_data = await database.get_word_id_list_by_user_id__user_data(user_id)
@@ -75,10 +84,14 @@ class WordsTraining:
             except TypeError:
                 print(TypeError)
                 continue
-        #preparing_data = [{'word': 'run', 'lang': 'en', 'translations': [{'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'бежать', 'freq': 10, 'lexemes': []}, {'word': 'работать', 'freq': 10, 'lexemes': []}, {'word': 'запустить', 'freq': 10, 'lexemes': []}, {'word': 'проходить', 'freq': 5, 'lexemes': []}, {'word': 'управлять', 'freq': 5, 'lexemes': []}, {'word': 'выполнить', 'freq': 5, 'lexemes': []}, {'word': 'убежать', 'freq': 5, 'lexemes': []}, {'word': 'баллотироваться', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'бег', 'freq': 5, 'lexemes': ['беге', 'бега', 'бегом', 'бегу']}, {'word': 'запуск', 'freq': 5, 'lexemes': ['запуску', 'запуска', 'запуском', 'запуске']}, {'word': 'выполнение', 'freq': 5, 'lexemes': ['выполненью', 'выполненье', 'выполненья', 'выполнении', 'выполнением', 'выполненьем', 'выполнения', 'выполненьи', 'выполнению']}, {'word': 'пробег', 'freq': 1, 'lexemes': ['пробега', 'пробегом', 'пробегу', 'пробеге']}]}]}, {'word': 'sleep', 'lang': 'en', 'translation': [{'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'сон', 'freq': 10, 'lexemes': ['сна', 'сном', 'сне', 'сну']}, {'word': 'режим сна', 'freq': 1, 'lexemes': ['режим сон', 'режим сной', 'режим сне', 'режим сном', 'режим сною', 'режим сны', 'режим сну']}, {'word': 'ночлег', 'freq': 1, 'lexemes': ['ночлега', 'ночлегу', 'ночлеге', 'ночлегом']}, {'word': 'спячка', 'freq': 1, 'lexemes': ['спячкой', 'спячку', 'спячки', 'спячке', 'спячкою']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'ночевать', 'freq': 5, 'lexemes': []}, {'word': 'засыпать', 'freq': 5, 'lexemes': []}, {'word': 'поспать', 'freq': 5, 'lexemes': []}, {'word': 'дремать', 'freq': 1, 'lexemes': []}, {'word': 'спаться', 'freq': 1, 'lexemes': []}, {'word': 'отсыпаться', 'freq': 1, 'lexemes': []}, {'word': 'усыплять', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'сонный', 'freq': 1, 'lexemes': ['сонное', 'сонном', 'сонному', 'сонную', 'сонною', 'сонной', 'сонным', 'сонная', 'сонного']}]}]}]
+        # ! for example !
+        # preparing_data = [{'word': 'run', 'lang': 'en', 'translations': [{'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'бежать', 'freq': 10, 'lexemes': []}, {'word': 'работать', 'freq': 10, 'lexemes': []}, {'word': 'запустить', 'freq': 10, 'lexemes': []}, {'word': 'проходить', 'freq': 5, 'lexemes': []}, {'word': 'управлять', 'freq': 5, 'lexemes': []}, {'word': 'выполнить', 'freq': 5, 'lexemes': []}, {'word': 'убежать', 'freq': 5, 'lexemes': []}, {'word': 'баллотироваться', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'бег', 'freq': 5, 'lexemes': ['бега', 'бегу', 'бегом', 'беге']}, {'word': 'запуск', 'freq': 5, 'lexemes': ['запуска', 'запуском', 'запуске', 'запуску']}, {'word': 'выполнение', 'freq': 5, 'lexemes': ['выполненьем', 'выполнению', 'выполнении', 'выполненье', 'выполненью', 'выполнением', 'выполненьи', 'выполненья', 'выполнения']}, {'word': 'пробег', 'freq': 1, 'lexemes': ['пробегу', 'пробега', 'пробегом', 'пробеге']}]}], 'level': 0, 'word_en_id': 1, 'learning_level': 0, 'random_words_ru': ['Сон', 'Ночлег', 'Спячка', 'Ночевать', 'Спаться', 'Спящий', 'Лучше', 'Более хороший', 'Более качественный', 'Улучшать']}, {'word': 'sleep', 'lang': 'en', 'translations': [{'pos_en': 'noun', 'pos_ru': 'существительное', 'words_list': [{'word': 'сон', 'freq': 10, 'lexemes': ['сна', 'сну', 'сне', 'сном']}, {'word': 'режим сна', 'freq': 1, 'lexemes': ['режим сны', 'режим сне', 'режим сон', 'режим сном', 'режим сну', 'режим сной', 'режим сною']}, {'word': 'ночлег', 'freq': 1, 'lexemes': ['ночлегом', 'ночлега', 'ночлеге', 'ночлегу']}, {'word': 'спячка', 'freq': 1, 'lexemes': ['спячкой', 'спячке', 'спячку', 'спячки', 'спячкою']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'спать', 'freq': 10, 'lexemes': []}, {'word': 'ночевать', 'freq': 5, 'lexemes': []}, {'word': 'засыпать', 'freq': 5, 'lexemes': []}, {'word': 'поспать', 'freq': 5, 'lexemes': []}, {'word': 'дремать', 'freq': 1, 'lexemes': []}, {'word': 'спаться', 'freq': 1, 'lexemes': []}, {'word': 'отсыпаться', 'freq': 1, 'lexemes': []}, {'word': 'усыплять', 'freq': 1, 'lexemes': []}]}, {'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'сонный', 'freq': 1, 'lexemes': ['сонной', 'сонному', 'сонною', 'сонная', 'сонного', 'сонную', 'сонным', 'сонное', 'сонном']}]}], 'level': 0, 'word_en_id': 2, 'learning_level': 0, 'random_words_ru': ['Работать', 'Управлять', 'Баллотироваться', 'Запустить', 'Бег', 'Пробег', 'Спящий', 'Более хороший', 'Улучшать']}, {'word': 'better', 'lang': 'en', 'translations': [{'pos_en': 'adjective', 'pos_ru': 'прилагательное', 'words_list': [{'word': 'более хороший', 'freq': 10, 'lexemes': ['более хорошьего', 'более хорошью', 'более хорошьим', 'более хорошьему', 'более хорошьею', 'более хорошьем', 'более хорошья', 'более хорошьей', 'более хорошье']}, {'word': 'лучше', 'freq': 5, 'lexemes': ['получше']}, {'word': 'больший', 'freq': 1, 'lexemes': ['большая', 'наибольшее', 'наибольшем', 'большему', 'наибольший', 'наибольшему', 'наибольшей', 'большею', 'большую', 'большим', 'наибольшую', 'большего', 'большее', 'большей', 'большем', 'наибольшею', 'наибольшая', 'наибольшим', 'наибольшего']}, {'word': 'более качественный', 'freq': 1, 'lexemes': ['более качественном', 'более качествённая', 'более качествённою', 'более качественная', 'более качествённый', 'более качественного', 'более качественному', 'более качествённом', 'более качествённой', 'более качествённым', 'более качественным', 'более качествённого', 'более качественною', 'более качествённое', 'более качествённому', 'более качественное', 'более качествённую', 'более качественную', 'более качественной']}]}, {'pos_en': 'verb', 'pos_ru': 'глагол', 'words_list': [{'word': 'улучшать', 'freq': 5, 'lexemes': []}, {'word': 'поправиться', 'freq': 5, 'lexemes': []}]}, {'pos_en': 'adverb', 'pos_ru': 'наречие', 'words_list': [{'word': 'в большей степени', 'freq': 5, 'lexemes': ['в большей степень', 'в большей степенью']}, {'word': 'больше', 'freq': 5, 'lexemes': ['побольше']}]}], 'level': 0, 'word_en_id': 5, 'learning_level': 0, 'random_words_ru': ['Бежать', 'Работать', 'Проходить', 'Баллотироваться', 'Выполнить', 'Выполнение', 'Засыпать', 'Поспать', 'Спать', 'Спящий']}]
         return preparing_data
 
     def get_question_without_context(self, user_id, i_array, i_subarray, clue=False):
+        """
+
+        """
         word = self.users_data[user_id][i_array]['word']
         pos_en = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_en']
         pos_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_ru']
@@ -143,9 +156,10 @@ class WordsTraining:
         :return:
         """
         if not self.users_data.get(user_id, None):
-            users_data = await self.create_array_with_user_data(user_id)
+            users_data = await self.get_array_with_user_data(user_id)
             self.users_data[user_id] = users_data
         return self.users_data[user_id]
+
 
 
 words_training = WordsTraining()
