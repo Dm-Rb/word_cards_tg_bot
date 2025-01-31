@@ -90,32 +90,44 @@ class WordsTraining:
 
     def get_question_without_context(self, user_id, i_array, i_subarray, clue=False):
         """
-
         """
         word = self.users_data[user_id][i_array]['word']
         pos_en = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_en']
         pos_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['pos_ru']
+        # Если флаг clue is True - сгенерировать подсказку
+        # translation_ru - переменная, которая содержит перевод слова, который будет использваться в качестве подсказки
+        # при условии флага clue is True
         if clue:
-            # Выбрать рандомный перевод для слова из списка переводов
-            random_translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
-            random_translation_ru = random_translation_ru.get('word', None)
+            # Если уровень изученности слова меньше кофициента 2 - дать подсказку с вариантом самого частого перевода
+            # (массив с переводами отсортирован по неубыванию в ключе частоты использования)
+            # Иначе выбрать подсказку рандомно
+            if self.users_data[user_id][i_array]['learning_level'] < 3:
+                translation_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'][0]
+                translation_ru = translation_ru.get('word', None)
+            else:
+                # Выбрать рандомный перевод для слова из списка переводов
+                translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
+                translation_ru = translation_ru.get('word', None)
         else:
-            random_translation_ru = None
-        return question_without_context(word, pos_en, pos_ru, random_translation_ru)
+            translation_ru = None
+        return question_without_context(word, pos_en, pos_ru, translation_ru)
 
     def generate_keyboard(self, user_id, i_array, i_subarray):
-        # Выбрать рандомный перевод для слова из списка переводов
-        random_translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
-        random_translation_ru = random_translation_ru.get('word', None)
-        if not random_translation_ru:
-            return None
-        random_translation_ru = random_translation_ru.capitalize()
+        if self.users_data[user_id][i_array]['learning_level'] < 5:
+            # Выбрать самый распространённый перевод слова из списка переводов
+            translation_ru = self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'][0]
+            translation_ru = translation_ru.get('word', None)
+        else:
+            # Выбрать рандомный перевод для слова из списка переводов
+            translation_ru = choice(self.users_data[user_id][i_array]['translations'][i_subarray]['words_list'])
+            translation_ru = translation_ru.get('word', None)
         # Выбрать 3 рандомные слова ru СТРОГО ИСКЛЮЧАЯ слова являющиеся переводами для word_en
-        random_words_ru = sample(self.users_data[user_id][i_array]['random_words_ru'], 3)
-
-        random_words_ru.append(random_translation_ru)
-        shuffle(random_words_ru)
-        return kb_with_answer_options(random_words_ru)
+        words_ru = sample(self.users_data[user_id][i_array]['random_words_ru'], 3)
+        # Добавить в спиок слово, являющееся верным переводом
+        words_ru.append(translation_ru.capitalize())
+        # Перемешать последовательность слов в списке
+        shuffle(words_ru)
+        return kb_with_answer_options(words_ru)
 
     def check_answer_without_context(self, answer: str, user_id: str, i_array: int, i_subarray: int):
         """
@@ -148,6 +160,28 @@ class WordsTraining:
 
     def show_training_result(self, user_id):
         return show_statistic_training(self.users_training_statistics[user_id])
+
+    def questions_controller(self, user_id, i_array, i_subarray):
+        """
+        Метод оболочка. В зависимости от уровня изученности (ключ 'lerning_level' в подмассиве)
+        возвращает определённый метод отображения вопроса
+
+        """
+        response = {'message_text': None, 'keyboard': None}
+        word_level = int(self.users_data[user_id][i_array]['learning_level'])
+
+        if word_level == 0:
+            print('Реализовать тут метод или функцию с отображениеми слова с переводами как в базовом хендлере. Типа запоминание')
+            pass
+        elif 3 > word_level >= 1:
+            response['keyboard'] = self.generate_keyboard(user_id, i_array, i_subarray)
+            response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray)
+            return response
+        elif 5 > word_level >= 3:
+            response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray, True)
+            return response
+
+
 
     async def get_user_data_array(self, user_id):
         """
