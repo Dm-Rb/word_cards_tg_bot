@@ -175,14 +175,20 @@ class WordsTraining:
             print('Реализовать тут метод или функцию с отображениеми слова с переводами как в базовом хендлере. Типа запоминание')
             pass
         elif 3 > word_level >= 1:
-            pass
             response['keyboard'] = self.generate_keyboard(user_id, i_array, i_subarray)
             response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray)
             return response
         elif 5 > word_level >= 3:
             response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray, True)
             return response
+        elif 7 > word_level >= 5:
+            response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray, False)
+            return response
 
+        elif 10 > word_level >= 7:
+            response['keyboard'] = self.generate_keyboard(user_id, i_array, i_subarray)
+            response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray)
+            return response
 
 
     async def get_user_data_array(self, user_id):
