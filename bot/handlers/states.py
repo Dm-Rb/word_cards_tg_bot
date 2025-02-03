@@ -13,6 +13,7 @@ class TrainingStates(StatesGroup):
 
 
 async def traversing_an_array(message: Message, state: FSMContext):
+
     """
     Итерация по элементам списка с пользовательскими данными.
     Массив думерный (внутри элемента массива имеет подмассив)
@@ -20,6 +21,9 @@ async def traversing_an_array(message: Message, state: FSMContext):
     user_id = message.from_user.id  # Получаем ID пользователя
     # Просим массив с данными для тренировки у объекта <words_training>
     user_data = await words_training.get_user_data_array(user_id)
+    state_data = await state.get_data()
+    print(state_data)
+    print(len(user_data))
     if not user_data:
         await message.answer(text="Ваш словарь пуст. Сперва добавьте слова для тенировки")
         await state.clear()

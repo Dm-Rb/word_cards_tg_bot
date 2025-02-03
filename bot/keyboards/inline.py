@@ -14,3 +14,14 @@ def get_kb__yes_no_answer(word: str, word_id:int, user_id: int, fuc_type: str) -
             ]
         ]
     )
+
+def get_kb__continue(index_array:int, index_subarray: int) -> InlineKeyboardMarkup:
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Я запомнил(а), далее",
+                                     callback_data=f"continue:{str(index_array)}:{str(index_subarray)}")
+            ]
+        ]
+    )

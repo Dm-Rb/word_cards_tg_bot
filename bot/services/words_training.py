@@ -1,9 +1,11 @@
 from bot.globals import database
 import pymorphy2
 from bot.services.utils import grouping_array_by_pos, preparing_array_tuple2dict
-from bot.templates.text import question_without_context, show_statistic_training
+from bot.templates.text import question_without_context, show_statistic_training, word_details
 from bot.keyboards.reply import kb_with_answer_options
 from random import choice, sample, shuffle
+from bot.keyboards.inline import get_kb__continue
+
 
 class WordsTraining:
 
@@ -172,8 +174,12 @@ class WordsTraining:
         word_level = int(self.users_data[user_id][i_array]['learning_level'])
 
         if word_level == 0:
-            print('Реализовать тут метод или функцию с отображениеми слова с переводами как в базовом хендлере. Типа запоминание')
-            pass
+            message_text = '<b>Запомните варианты перевода для слова:</b>\n\n'
+            message_text += word_details(self.users_data[user_id][i_array], 'en')
+            response['message_text'] = message_text
+            response['keyboard'] = get_kb__continue(i_array, i_subarray)
+            return response
+            # print('Реализовать тут метод или функцию с отображениеми слова с переводами как в базовом хендлере. Типа запоминание')
         elif 3 > word_level >= 1:
             response['keyboard'] = self.generate_keyboard(user_id, i_array, i_subarray)
             response['message_text'] = self.get_question_without_context(user_id, i_array, i_subarray)
